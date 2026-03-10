@@ -328,22 +328,20 @@ var SPICE_LEVELS=[
 var NAAN_OPTIONS=[
   {id:'plain-naan',ja:'プレーンナン',en:'Plain Naan',price:0},
   {id:'rice',ja:'ライス',en:'Rice',price:0},
-  {id:'garlic-naan',ja:'ガーリックナン',en:'Garlic Naan',price:250},
-  {id:'cheese-naan',ja:'チーズナン',en:'Cheese Naan',price:350},
-  {id:'kabocha-naan',ja:'かぼちゃナン',en:'Pumpkin Naan',price:350},
-  {id:'bacon-cheese-naan',ja:'ベーコンチーズナン',en:'Bacon Cheese Naan',price:450},
-  {id:'keema-cheese-naan',ja:'キーマチーズナン',en:'Keema Cheese Naan',price:450},
-  {id:'honey-cheese-naan',ja:'はちみつ+チーズナン',en:'Honey & Cheese Naan',price:450},
-  {id:'anko-naan',ja:'あんこナン',en:'Anko Naan',price:450},
-  {id:'turmeric-rice',ja:'ターメリックバターライス',en:'Turmeric Butter Rice',price:150},
-  {id:'basmati-rice',ja:'バスマティライス',en:'Basmati Rice',price:200},
-  {id:'jeera-rice',ja:'ジーラライス',en:'Jeera Rice',price:250}
+  {id:'garlic-naan',ja:'ガーリックナン',en:'Garlic Naan',price:300},
+  {id:'cheese-naan',ja:'チーズナン',en:'Cheese Naan',price:300},
+  {id:'kabocha-naan',ja:'かぼちゃナン',en:'Pumpkin Naan',price:300},
+  {id:'bacon-cheese-naan',ja:'ベーコンチーズナン',en:'Bacon Cheese Naan',price:300},
+  {id:'keema-cheese-naan',ja:'キーマチーズナン',en:'Keema Cheese Naan',price:300},
+  {id:'honey-cheese-naan',ja:'はちみつ+チーズナン',en:'Honey & Cheese Naan',price:300},
+  {id:'anko-naan',ja:'あんこナン',en:'Anko Naan',price:300},
 ];
 
 var CATEGORIES=[
   {id:'lunch',label:'LUNCH'},
   {id:'biryani',label:'BIRYANI'},
   {id:'choice',label:'CHOICE\nSET'},
+  {id:'curry',label:'CURRY'},
 ];
 
 var LUNCH_CURRIES=[
@@ -364,10 +362,28 @@ var MENU_ITEMS=[
   {cat:'choice',id:'ch01',ja:'タンドリーチキンセット',en:'Tandoori Chicken Set',price:1650,isChoiceSet:true,choiceType:'tandoori',rate:0.10},
   {cat:'choice',id:'ch02',ja:'チーズナン チキンティッカセット',en:'Cheese Naan Tikka Set',price:1750,isChoiceSet:true,choiceType:'tikka',rate:0.10},
   {cat:'choice',id:'ch03',ja:'カトマンズセット',en:'Kathmandu Set',price:1350,isChoiceSet:true,choiceType:'kathmandu',rate:0.10},
+  {cat:'curry',id:'c00',ja:'週替わりおすすめカレー',en:'Weekly Recommendation Curry',price:1200,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c01',ja:'チキンカレー',en:'Chicken Curry',price:1150,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c02',ja:'バターチキンカレー',en:'Butter Chicken Curry',price:1250,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c03',ja:'ほうれん草チキン',en:'Saag Chicken',price:1250,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c04',ja:'ポークビンダル',en:'Pork Vindaloo',price:1150,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c05',ja:'野菜カレー',en:'Vegetable Curry',price:1100,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c06',ja:'ココナッツチキン',en:'Coconut Chicken',price:1350,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c07',ja:'キーマエッグ',en:'Keema Egg Curry',price:1250,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c08',ja:'ダルカレー',en:'Dal Curry',price:1150,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c09',ja:'ポークカレー',en:'Pork Curry',price:1200,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c10',ja:'ほうれん草ラム',en:'Saag Lamb',price:1450,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c11',ja:'ラムカレー',en:'Lamb Curry',price:1450,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c12',ja:'ヤギカレー',en:'Goat Curry',price:1550,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c13',ja:'カダイチキン',en:'Kadai Chicken',price:1300,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c14',ja:'ララチキン',en:'Rara Chicken',price:1300,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c15',ja:'パニールチャトパタ',en:'Paneer Chatpata',price:1300,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c16',ja:'チキンチーズカレー',en:'Chicken Cheese Curry',price:1300,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c17',ja:'エビカレー',en:'Ebi Curry',price:1300,isCurry:true,rate:0.10},
 ];
 
 var currentTable='';
-var selectedCat='curry';
+var selectedCat='lunch';
 var pendingCurry=null;
 var curryStep=1;
 var selSpice=null,selSize=null,selNaan=null;
@@ -975,7 +991,7 @@ function renderCurryModal(){
     });
   }else if(curryStep===2){
     h.innerText='🍛 Size';
-    ['Regular','Large (+¥200)'].forEach(function(s,i){
+    ['Regular','Large (+¥300)'].forEach(function(s,i){
       var b=document.createElement('button');b.className='spice-btn';b.innerText=s;
       (function(idx){b.onclick=function(){selSize=idx===0?'普通':'大盛り';curryStep=3;renderCurryModal();};})(i);
       modal.appendChild(b);
@@ -1003,7 +1019,7 @@ function confirmCurry(){
   var spice=null,naan=null;
   for(var i=0;i<SPICE_LEVELS.length;i++){if(SPICE_LEVELS[i].id===selSpice){spice=SPICE_LEVELS[i];break;}}
   for(var i=0;i<NAAN_OPTIONS.length;i++){if(NAAN_OPTIONS[i].id===selNaan){naan=NAAN_OPTIONS[i];break;}}
-  var extra=selSize==='大盛り'?200:0;
+  var extra=selSize==='大盛り'?300:0;
   var total=pendingCurry.price+extra+naan.price;
   var jaOpt='['+spice.ja+' / '+selSize+']';
   var enOpt='['+spice.en+' / '+(selSize==='大盛り'?'Large':'Regular')+']';
