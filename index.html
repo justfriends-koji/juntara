@@ -343,6 +343,7 @@ var NAAN_OPTIONS=[
 var CATEGORIES=[
   {id:'lunch',label:'LUNCH'},
   {id:'biryani',label:'BIRYANI'},
+  {id:'choice',label:'CHOICE\nSET'},
 ];
 
 var LUNCH_CURRIES=[
@@ -360,6 +361,9 @@ var MENU_ITEMS=[
   {cat:'lunch',id:'l03',ja:'Cセット',en:'Set C',price:1300,isLunchSet:true,rate:0.10},
   {cat:'lunch',id:'l04',ja:'Dセット（スープカレー）',en:'Set D - Soup Curry',price:1200,isLunchSet:true,rate:0.10},
   {cat:'biryani',id:'b01',ja:'週替り限定ビリヤニセット',en:'Weekly Biryani Set',price:1750,isBiryaniSet:true,rate:0.10},
+  {cat:'choice',id:'ch01',ja:'タンドリーチキンセット',en:'Tandoori Chicken Set',price:1650,isChoiceSet:true,choiceType:'tandoori',rate:0.10},
+  {cat:'choice',id:'ch02',ja:'チーズナン チキンティッカセット',en:'Cheese Naan Tikka Set',price:1750,isChoiceSet:true,choiceType:'tikka',rate:0.10},
+  {cat:'choice',id:'ch03',ja:'カトマンズセット',en:'Kathmandu Set',price:1350,isChoiceSet:true,choiceType:'kathmandu',rate:0.10},
 ];
 
 var currentTable='';
@@ -501,7 +505,203 @@ function addItem(itemId){
   if(item.isCurry){openCurryModal(item);}
   else if(item.isLunchSet){openLunchModal(item);}
   else if(item.isBiryaniSet){openBiryaniModal(item);}
+  else if(item.isChoiceSet){openChoiceModal(item);}
   else{addToHistory(item.ja,item.en,item.price,item.rate,1);}
+}
+
+// ---- チョイスカレーセットモーダル ----
+var CHOICE_CURRIES=[
+  {id:'cc1',ja:'チキンカレー',en:'Chicken Curry'},
+  {id:'cc2',ja:'ポークカレー',en:'Pork Curry'},
+  {id:'cc3',ja:'ポークビンダル',en:'Pork Vindaloo'},
+  {id:'cc4',ja:'キーマエッグ',en:'Keema Egg'},
+  {id:'cc5',ja:'ダルカレー',en:'Dal Curry'},
+  {id:'cc6',ja:'ほうれん草チキン',en:'Palak Chicken'},
+  {id:'cc7',ja:'本日のスペシャル',en:"Today's Special"},
+];
+var CHOICE_NAAN_UPGRADE=[
+  {id:'plain',ja:'プレーンナン（そのまま）',en:'Plain Naan',extra:0},
+  {id:'upgrade',ja:'ナン変更',en:'Naan Upgrade',extra:300},
+];
+var DINNER_DRINKS=[
+  {id:'icecoffee',ja:'アイスコーヒー',en:'Iced Coffee'},
+  {id:'hotcoffee',ja:'ホットコーヒー',en:'Hot Coffee'},
+  {id:'oolong',ja:'烏龍茶',en:'Oolong Tea'},
+  {id:'oj',ja:'オレンジジュース',en:'Orange Juice'},
+  {id:'cola',ja:'コーラ',en:'Cola'},
+];
+
+var pendingChoice=null;
+var selChoiceCurry1=null;var selChoiceCurry2=null;
+var selChoiceNaan=null;var selChoiceNaanUpgrade=null;
+var choiceStep=1;
+
+function openChoiceModal(item){
+  pendingChoice=item;
+  selChoiceCurry1=null;selChoiceCurry2=null;
+  selChoiceNaan=null;selChoiceNaanUpgrade=null;
+  choiceStep=1;
+  renderChoiceModal();
+  document.getElementById('overlay-curry').style.display='flex';
+}
+
+function renderChoiceModal(){
+  var modal=document.getElementById('modal-curry');
+  modal.innerHTML='';
+  var type=pendingChoice.choiceType;
+  // type: tandoori(カレー×2+ナン/ライス+ナン変更+ドリンク)
+  //       tikka(カレー×1+ナン変更+ドリンク, チーズナン固定)
+  //       kathmandu(カレー×2+ドリンク, ライス固定)
+
+  // ステップ定義
+  // tandoori:  1=カレー1  2=カレー2  3=ナン/ライス  4=ナン変更  5=ドリンク
+  // tikka:     1=カレー1  2=ナン変更  3=ドリンク
+  // kathmandu: 1=カレー1  2=カレー2  3=ドリンク
+
+  var titles={
+    1:'🍛 Select Curry'+(type!=='tikka'?' (1st)':''),
+    2: type==='tandoori'?'🍛 Select Curry (2nd)': type==='tikka'?'🍞 Naan Upgrade?':'🍛 Select Curry (2nd)',
+    3: type==='tandoori'?'🍞 Naan or Rice': type==='tikka'?'🥤 Soft Drink':'🥤 Soft Drink',
+    4: type==='tandoori'?'🍞 Naan Upgrade?':'🥤 Soft Drink',
+    5:'🥤 Soft Drink',
+  };
+
+  var h=document.createElement('div');h.className='modal-title';
+  h.innerText=titles[choiceStep]||'';
+  modal.appendChild(h);
+
+  // サブタイトル
+  var sub=document.createElement('div');sub.style.cssText='font-size:12px;color:#888;margin-bottom:12px;';
+  var parts=[pendingChoice.en];
+  if(selChoiceCurry1)parts.push(selChoiceCurry1.en);
+  if(selChoiceCurry2)parts.push(selChoiceCurry2.en);
+  if(selChoiceNaan)parts.push(selChoiceNaan==='naan'?'Plain Naan':'Rice');
+  sub.innerText=parts.join(' / ');
+  modal.appendChild(sub);
+
+  // カレー選択（重複不可）
+  function renderCurryButtons(onSelect, exclude){
+    CHOICE_CURRIES.forEach(function(c){
+      if(exclude&&exclude.id===c.id)return;
+      var b=document.createElement('button');b.className='naan-btn';
+      b.innerHTML='<span style="font-weight:bold;">'+c.en+'</span>'
+        +'<span style="font-size:11px;color:#aaa;display:block;">'+c.ja+'</span>';
+      (function(curry){b.onclick=function(e){e.stopPropagation();onSelect(curry);};})(c);
+      modal.appendChild(b);
+    });
+  }
+
+  function renderDrinkButtons(){
+    DINNER_DRINKS.forEach(function(d){
+      var b=document.createElement('button');b.className='naan-btn';
+      b.innerHTML='<span style="font-weight:bold;">'+d.en+'</span>'
+        +'<span style="font-size:11px;color:#aaa;display:block;">'+d.ja+'</span>'
+        +'<span style="font-size:12px;color:#888;float:right;">Included</span>';
+      (function(dr){b.onclick=function(e){e.stopPropagation();confirmChoiceSet(dr);};})(d);
+      modal.appendChild(b);
+    });
+  }
+
+  function addBack(label, targetStep){
+    var bk=document.createElement('div');
+    bk.style.cssText='color:#aaa;font-size:13px;margin-top:12px;cursor:pointer;text-align:center;';
+    bk.innerText='← '+label;
+    bk.onclick=function(e){e.stopPropagation();choiceStep=targetStep;renderChoiceModal();};
+    modal.appendChild(bk);
+  }
+
+  // --- tandoori ---
+  if(type==='tandoori'){
+    if(choiceStep===1){
+      renderCurryButtons(function(c){selChoiceCurry1=c;choiceStep=2;renderChoiceModal();},null);
+    }else if(choiceStep===2){
+      renderCurryButtons(function(c){selChoiceCurry2=c;choiceStep=3;renderChoiceModal();},selChoiceCurry1);
+      addBack('Change curry 1',1);
+    }else if(choiceStep===3){
+      [{id:'naan',ja:'プレーンナン',en:'Plain Naan'},{id:'rice',ja:'ライス',en:'Rice'}].forEach(function(n){
+        var b=document.createElement('button');b.className='naan-btn';
+        b.innerHTML='<span style="font-weight:bold;">'+n.en+'</span>'
+          +'<span style="font-size:11px;color:#aaa;display:block;">'+n.ja+'</span>';
+        (function(nn){b.onclick=function(e){e.stopPropagation();selChoiceNaan=nn.id;
+          if(nn.id==='naan'){choiceStep=4;}else{choiceStep=5;}renderChoiceModal();
+        };})(n);
+        modal.appendChild(b);
+      });
+      addBack('Change curry 2',2);
+    }else if(choiceStep===4){
+      CHOICE_NAAN_UPGRADE.forEach(function(n){
+        var b=document.createElement('button');b.className='naan-btn';
+        b.innerHTML='<span style="font-weight:bold;">'+n.en+'</span>'
+          +'<span style="font-size:11px;color:#aaa;display:block;">'+n.ja+'</span>'
+          +(n.extra>0?'<span style="font-size:12px;color:#e67e22;float:right;">+¥'+n.extra+'</span>':'<span style="font-size:12px;color:#888;float:right;">Included</span>');
+        (function(nn){b.onclick=function(e){e.stopPropagation();selChoiceNaanUpgrade=nn;choiceStep=5;renderChoiceModal();};})(n);
+        modal.appendChild(b);
+      });
+      addBack('Change naan/rice',3);
+    }else{
+      renderDrinkButtons();
+      addBack('Change naan upgrade',selChoiceNaan==='naan'?4:3);
+    }
+
+  // --- tikka (チーズナン固定) ---
+  }else if(type==='tikka'){
+    if(choiceStep===1){
+      renderCurryButtons(function(c){selChoiceCurry1=c;choiceStep=2;renderChoiceModal();},null);
+    }else if(choiceStep===2){
+      CHOICE_NAAN_UPGRADE.forEach(function(n){
+        var b=document.createElement('button');b.className='naan-btn';
+        b.innerHTML='<span style="font-weight:bold;">'+n.en+'</span>'
+          +'<span style="font-size:11px;color:#aaa;display:block;">'+n.ja+'</span>'
+          +(n.extra>0?'<span style="font-size:12px;color:#e67e22;float:right;">+¥'+n.extra+'</span>':'<span style="font-size:12px;color:#888;float:right;">Cheese Naan Included</span>');
+        (function(nn){b.onclick=function(e){e.stopPropagation();selChoiceNaanUpgrade=nn;choiceStep=3;renderChoiceModal();};})(n);
+        modal.appendChild(b);
+      });
+      addBack('Change curry',1);
+    }else{
+      renderDrinkButtons();
+      addBack('Change naan upgrade',2);
+    }
+
+  // --- kathmandu (カレー×2・ライス固定・ナン変更なし) ---
+  }else{
+    if(choiceStep===1){
+      renderCurryButtons(function(c){selChoiceCurry1=c;choiceStep=2;renderChoiceModal();},null);
+    }else if(choiceStep===2){
+      renderCurryButtons(function(c){selChoiceCurry2=c;choiceStep=3;renderChoiceModal();},selChoiceCurry1);
+      addBack('Change curry 1',1);
+    }else{
+      renderDrinkButtons();
+      addBack('Change curry 2',2);
+    }
+  }
+}
+
+function confirmChoiceSet(drink){
+  var type=pendingChoice.choiceType;
+  var extra=selChoiceNaanUpgrade&&selChoiceNaanUpgrade.extra>0?selChoiceNaanUpgrade.extra:0;
+  var parts=[];
+  if(selChoiceCurry1)parts.push(selChoiceCurry1.ja);
+  if(selChoiceCurry2)parts.push(selChoiceCurry2.ja);
+  if(type==='tandoori'){parts.push(selChoiceNaan==='naan'?'プレーンナン':'ライス');}
+  else if(type==='tikka'){parts.push('チーズナン');}
+  else{parts.push('ライス');}
+  if(selChoiceNaanUpgrade&&selChoiceNaanUpgrade.extra>0)parts.push('ナン変更+¥300');
+  parts.push(drink.ja);
+
+  var enParts=[];
+  if(selChoiceCurry1)enParts.push(selChoiceCurry1.en);
+  if(selChoiceCurry2)enParts.push(selChoiceCurry2.en);
+  if(type==='tandoori'){enParts.push(selChoiceNaan==='naan'?'Plain Naan':'Rice');}
+  else if(type==='tikka'){enParts.push('Cheese Naan');}
+  else{enParts.push('Rice');}
+  if(selChoiceNaanUpgrade&&selChoiceNaanUpgrade.extra>0)enParts.push('Naan Upgrade +¥300');
+  enParts.push(drink.en);
+
+  var jaOpt='['+parts.join(' / ')+']';
+  var enOpt='['+enParts.join(' / ')+']';
+  addToHistory(pendingChoice.ja+' '+jaOpt, pendingChoice.en+' '+enOpt, pendingChoice.price+extra, pendingChoice.rate, 1);
+  document.getElementById('overlay-curry').style.display='none';
+  updateFooter();
 }
 
 // ---- ビリヤニセットモーダル ----
