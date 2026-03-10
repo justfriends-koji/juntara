@@ -342,6 +342,7 @@ var CATEGORIES=[
   {id:'biryani',label:'BIRYANI'},
   {id:'choice',label:'CHOICE\nSET'},
   {id:'curry',label:'CURRY'},
+  {id:'soup',label:'SOUP\nCURRY'},
 ];
 
 var LUNCH_CURRIES=[
@@ -380,6 +381,15 @@ var MENU_ITEMS=[
   {cat:'curry',id:'c15',ja:'パニールチャトパタ',en:'Paneer Chatpata',price:1300,isCurry:true,rate:0},
   {cat:'curry',id:'c16',ja:'チキンチーズカレー',en:'Chicken Cheese Curry',price:1300,isCurry:true,rate:0},
   {cat:'curry',id:'c17',ja:'エビカレー',en:'Ebi Curry',price:1300,isCurry:true,rate:0},
+  {cat:'soup',id:'sc01',ja:'チキンスープカレー',en:'Chicken Soup Curry',price:1200,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc02',ja:'パリパリチキンスープカレー',en:'Paripari Chicken Soup Curry',price:1350,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc03',ja:'納豆キーマスープカレー',en:'Natto Keema Soup Curry',price:1350,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc04',ja:'野菜スープカレー',en:'Vegetables Soup Curry',price:1400,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc05',ja:'エビのスープカレー',en:'Prawn Soup Curry',price:1400,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc06',ja:'ココナッツチキンスープ',en:'Coconut Chicken Soup',price:1450,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc07',ja:'ほうれん草チキンスープ',en:'Horenso Chicken Soup',price:1450,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc08',ja:'ヤギのスープカレー',en:'Goat Soup Curry',price:1600,isSoupCurry:true,rate:0},
+  {cat:'soup',id:'sc09',ja:'生ラムスープカレー',en:'Nama Lamb Soup Curry',price:1850,isSoupCurry:true,rate:0},
 ];
 
 var currentTable='';
@@ -522,7 +532,104 @@ function addItem(itemId){
   else if(item.isLunchSet){openLunchModal(item);}
   else if(item.isBiryaniSet){openBiryaniModal(item);}
   else if(item.isChoiceSet){openChoiceModal(item);}
+  else if(item.isSoupCurry){openSoupModal(item);}
   else{addToHistory(item.ja,item.en,item.price,item.rate,1);}
+}
+
+// ---- スープカレーモーダル ----
+var SOUP_TOPPINGS=[
+  {id:'st1',ja:'中で卵',en:'Boiled Egg',price:150},
+  {id:'st2',ja:'チーズ',en:'Cheese',price:250},
+  {id:'st3',ja:'納豆',en:'Natto',price:150},
+  {id:'st4',ja:'シシカバブ',en:'Shish Kebab',price:350},
+  {id:'st5',ja:'ブロッコリー(4つ)',en:'Broccoli x4',price:100},
+  {id:'st6',ja:'アスパラ(3つ)',en:'Asparagus x3',price:100},
+  {id:'st7',ja:'レンコン(3つ)',en:'Lotus Root x3',price:100},
+  {id:'st8',ja:'ベビーコーン(3つ)',en:'Baby Corn x3',price:100},
+];
+var pendingSoup=null;var selSoupSpice=null;var selSoupNaan=null;
+var selSoupToppings={};var soupStep=1;
+
+function openSoupModal(item){
+  pendingSoup=item;selSoupSpice=null;selSoupNaan=null;selSoupToppings={};soupStep=1;
+  renderSoupModal();
+  document.getElementById('overlay-curry').style.display='flex';
+}
+
+function renderSoupModal(){
+  var modal=document.getElementById('modal-curry');
+  modal.innerHTML='';
+  var titles={1:'🌶️ Spice Level',2:'🍞 Naan or Rice',3:'🍱 Toppings (Optional)'};
+  var h=document.createElement('div');h.className='modal-title';
+  h.innerText=titles[soupStep];
+  modal.appendChild(h);
+  var sub=document.createElement('div');sub.style.cssText='font-size:12px;color:#888;margin-bottom:12px;';
+  sub.innerText=pendingSoup.en;
+  modal.appendChild(sub);
+
+  function addBack(label,step){
+    var bk=document.createElement('div');bk.style.cssText='color:#aaa;font-size:13px;margin-top:12px;cursor:pointer;text-align:center;';
+    bk.innerText='← '+label;bk.onclick=function(e){e.stopPropagation();soupStep=step;renderSoupModal();};
+    modal.appendChild(bk);
+  }
+
+  if(soupStep===1){
+    SPICE_LEVELS.forEach(function(s){
+      var b=document.createElement('button');b.className='spice-btn';b.innerText=s.en;
+      (function(sp){b.onclick=function(e){e.stopPropagation();selSoupSpice=sp.id;soupStep=2;renderSoupModal();};})(s);
+      modal.appendChild(b);
+    });
+
+  }else if(soupStep===2){
+    [{id:'naan',ja:'プレーンナン',en:'Plain Naan'},{id:'rice',ja:'ライス',en:'Rice'}].forEach(function(n){
+      var b=document.createElement('button');b.className='naan-btn';
+      b.innerHTML='<span style="font-weight:bold;">'+n.en+'</span>'
+        +'<span style="font-size:11px;color:#aaa;display:block;">'+n.ja+'</span>'
+        +'<span style="font-size:12px;color:#888;float:right;">Included</span>';
+      (function(nn){b.onclick=function(e){e.stopPropagation();selSoupNaan=nn;soupStep=3;renderSoupModal();};})(n);
+      modal.appendChild(b);
+    });
+    addBack('Change spice',1);
+
+  }else{
+    // トッピング複数選択
+    SOUP_TOPPINGS.forEach(function(t){
+      var selected=!!selSoupToppings[t.id];
+      var b=document.createElement('button');b.className='naan-btn';
+      b.style.cssText=selected?'border:2px solid var(--accent);background:#fff5f5;':'';
+      b.innerHTML='<span style="font-weight:bold;">'+(selected?'✓ ':'')+t.en+'</span>'
+        +'<span style="font-size:11px;color:#aaa;display:block;">'+t.ja+'</span>'
+        +'<span style="font-size:12px;color:#e67e22;float:right;">+¥'+t.price+'</span>';
+      (function(tp){b.onclick=function(e){
+        e.stopPropagation();
+        if(selSoupToppings[tp.id])delete selSoupToppings[tp.id];
+        else selSoupToppings[tp.id]=tp;
+        renderSoupModal();
+      };})(t);
+      modal.appendChild(b);
+    });
+    var ab=document.createElement('button');ab.className='btn-large';
+    ab.style.cssText='background:var(--primary);color:#fff;margin-top:14px;width:100%;';
+    ab.innerText='Add to Order';
+    ab.onclick=confirmSoupCurry;
+    modal.appendChild(ab);
+    addBack('Change naan/rice',2);
+  }
+}
+
+function confirmSoupCurry(){
+  var spice=SPICE_LEVELS.filter(function(s){return s.id===selSoupSpice;})[0];
+  var toppingKeys=Object.keys(selSoupToppings);
+  var toppingExtra=toppingKeys.reduce(function(s,k){return s+selSoupToppings[k].price;},0);
+  var jaOpt='['+spice.ja+' / '+selSoupNaan.ja+']';
+  var enOpt='['+spice.en+' / '+selSoupNaan.en+']';
+  addToHistory(pendingSoup.ja+' '+jaOpt, pendingSoup.en+' '+enOpt, pendingSoup.price, pendingSoup.rate, 1);
+  toppingKeys.forEach(function(k){
+    var t=selSoupToppings[k];
+    addToHistory('トッピング '+t.ja,'Topping: '+t.en,t.price,0,1);
+  });
+  document.getElementById('overlay-curry').style.display='none';
+  updateFooter();
 }
 
 // ---- チョイスカレーセットモーダル ----
