@@ -77,6 +77,27 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
 </head>
 <body>
 
+<!-- プリンター設定モーダル -->
+<div id="overlay-settings" class="overlay" style="display:none;" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-title">⚙️ Printer Settings</div>
+    <div style="font-size:13px;color:#888;margin-bottom:16px;">IPアドレスを入力して保存</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🍳 Kitchen Printer IP</div>
+      <input id="input-kitchen-ip" type="text" placeholder="192.168.1.100"
+        style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🧾 Receipt Printer IP</div>
+      <input id="input-receipt-ip" type="text" placeholder="192.168.1.101"
+        style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
+    </div>
+    <button onclick="saveSettings()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;">Save</button>
+    <div id="settings-saved" style="text-align:center;color:green;font-size:13px;margin-top:10px;display:none;">✅ Saved!</div>
+    <div style="text-align:center;margin-top:10px;"><span onclick="closeSettings()" style="color:#aaa;font-size:13px;cursor:pointer;">Close</span></div>
+  </div>
+</div>
+
 <!-- 席追加モーダル -->
 <div id="overlay-add-table" class="overlay" style="display:none;">
   <div class="modal">
@@ -97,7 +118,10 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
   <header>
     <div class="admin-btn" id="admin-btn-label" onclick="checkAdminAuth()">Sales</div>
     <div style="font-weight:bold;font-size:17px;letter-spacing:1px;">🍛 JUNTARA</div>
-    <div style="font-size:22px;cursor:pointer;color:#ffd;" onclick="location.reload()">↻</div>
+    <div style="display:flex;gap:14px;align-items:center;">
+      <div style="font-size:20px;cursor:pointer;color:#ffd;" onclick="openSettings()">⚙️</div>
+      <div style="font-size:22px;cursor:pointer;color:#ffd;" onclick="location.reload()">↻</div>
+    </div>
   </header>
   <div class="grid-tables" id="table-grid"></div>
 </div>
@@ -272,8 +296,11 @@ function _toSJISBytes(str){var out=[];for(var i=0;i<str.length;i++){var cp=str.c
 <!-- UIコア -->
 <script>
 var STORE_ID='juntara';
-var KITCHEN_URL='http://192.168.1.100/StarWebPRNT/SendMessage';
-var RECEIPT_URL='http://192.168.1.101/StarWebPRNT/SendMessage';
+var DEFAULT_KITCHEN_IP='192.168.1.100';
+var DEFAULT_RECEIPT_IP='192.168.1.101';
+function getKitchenUrl(){var ip=localStorage.getItem('kitchenIp')||DEFAULT_KITCHEN_IP;return'http://'+ip+'/StarWebPRNT/SendMessage';}
+function getReceiptUrl(){var ip=localStorage.getItem('receiptIp')||DEFAULT_RECEIPT_IP;return'http://'+ip+'/StarWebPRNT/SendMessage';}
+var KITCHEN_URL='';var RECEIPT_URL=''; // 後方互換用（unused）
 
 var TABLES=[
   {id:'T-1',label:'T-1',sub:'テーブル'},
@@ -720,6 +747,20 @@ function openCurryModal(item){
   pendingCurry=item;curryStep=1;selSpice=null;selSize=null;selNaan=null;
   renderCurryModal();document.getElementById('overlay-curry').style.display='flex';
 }
+function openSettings(){
+  document.getElementById('input-kitchen-ip').value=localStorage.getItem('kitchenIp')||DEFAULT_KITCHEN_IP;
+  document.getElementById('input-receipt-ip').value=localStorage.getItem('receiptIp')||DEFAULT_RECEIPT_IP;
+  document.getElementById('settings-saved').style.display='none';
+  document.getElementById('overlay-settings').style.display='flex';
+}
+function saveSettings(){
+  var kip=document.getElementById('input-kitchen-ip').value.trim();
+  var rip=document.getElementById('input-receipt-ip').value.trim();
+  if(kip)localStorage.setItem('kitchenIp',kip);
+  if(rip)localStorage.setItem('receiptIp',rip);
+  document.getElementById('settings-saved').style.display='block';
+}
+function closeSettings(){document.getElementById('overlay-settings').style.display='none';}
 function closeCurryModal(){document.getElementById('overlay-curry').style.display='none';}
 function renderCurryModal(){
   var modal=document.getElementById('modal-curry');modal.innerHTML='';
@@ -941,7 +982,7 @@ function pay(doPrint){
     r+=b.createAlignmentElement({position:'center'});
     r+=b.createTextElement({data:'Thank you!\n\n'});
     r+=b.createCutPaperElement({type:'partial'});
-    sendToPrinter(RECEIPT_URL,r);
+    sendToPrinter(getReceiptUrl(),r);
   }
   if(window._saveSaleToCloud)window._saveSaleToCloud(currentTable,currentPaymentMethod);
   localStorage.removeItem('history_'+currentTable);
@@ -966,7 +1007,7 @@ function printKitchen(){
   r+=b.createAlignmentElement({position:'left'});
   hist.forEach(function(item){r+=b.createTextElement({data:item.en+'\n  x'+item.qty+'\n',width:1,height:1});});
   r+=b.createCutPaperElement({type:'partial'});
-  sendToPrinter(KITCHEN_URL,r);
+  sendToPrinter(getKitchenUrl(),r);
 }
 
 function sendToPrinter(url,xml){
@@ -1032,7 +1073,7 @@ function printRyoshuusho(){
     r+=b.createAlignmentElement({position:'center'});
     r+=b.createTextElement({data:'JUNTARA CURRY\nSapporo, Shiroishi-ku\nTEL: 011-313-0341\n\n'});
     r+=b.createCutPaperElement({type:'partial'});
-    sendToPrinter(RECEIPT_URL,r);
+    sendToPrinter(getReceiptUrl(),r);
   }
   closeRyoshuusho();
   // 会計完了処理
@@ -1241,7 +1282,7 @@ window._printReport=async function(mode){
   r+=b.createAlignmentElement({position:'left'});
   r+=b.createTextElement({data:'Orders: '+filtered.length+'\nGuests: '+guests+'\nTotal: ¥'+total.toLocaleString()+'\n',width:1,height:1});
   r+=b.createCutPaperElement({type:'full'});
-  sendToPrinter(RECEIPT_URL,r);
+  sendToPrinter(getReceiptUrl(),r);
 };
 console.log('✅ Firebase (juntara)');
 }catch(e){console.warn('⚠️ Firebase error:',e.message);}
