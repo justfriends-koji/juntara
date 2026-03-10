@@ -151,15 +151,26 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
 <div id="view-menu" class="view">
   <header>
     <div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span id="menu-table-label">Order</span></div>
-    <span style="color:#ffd;font-size:13px;cursor:pointer;" onclick="printKitchen()">🖨️ Kitchen</span>
+    <span style="color:#ffd;font-size:13px;cursor:pointer;" onclick="showOrderHistory()">📋 View</span>
   </header>
   <div class="menu-container">
     <div class="sidebar" id="sidebar"></div>
     <div class="item-grid" id="item-grid"></div>
   </div>
-  <footer>
-    <div class="footer-history" onclick="showOrderHistory()"><span id="footer-hist-text">−</span><span>▶ View Order</span></div>
-    <div class="footer-cart" onclick="showOrderHistory()"><span>🛒 Total</span><span id="footer-cart-text">¥0</span></div>
+  <footer style="flex-direction:column;gap:0;padding:0;">
+    <div style="display:flex;width:100%;background:var(--primary);padding:8px 12px;box-sizing:border-box;align-items:center;justify-content:space-between;" onclick="showOrderHistory()">
+      <span style="color:#fff;font-size:12px;" id="footer-hist-text">−</span>
+      <span style="color:#ffd;font-size:12px;">▶ View Order</span>
+    </div>
+    <div style="display:flex;width:100%;gap:0;">
+      <div style="flex:1;background:#f5f5f5;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;" onclick="showOrderHistory()">
+        <div style="font-size:11px;color:#888;">未送信</div>
+        <div style="font-weight:bold;font-size:16px;color:var(--accent);" id="footer-unsent-text">0 items</div>
+      </div>
+      <button id="btn-send-kitchen" onclick="sendToKitchen()" style="flex:2;background:#e74c3c;color:#fff;border:none;font-size:18px;font-weight:bold;padding:14px;cursor:pointer;">
+        🖨️ Send to Kitchen
+      </button>
+    </div>
   </footer>
 </div>
 
@@ -170,7 +181,8 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
   <div class="summary-area" id="history-summary"></div>
   <div style="background:#fff;border-top:1px solid #ddd;padding-bottom:10px;">
     <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="showCheckout()">Checkout →</button>
-    <button class="btn-large" style="background:#fff;color:var(--primary);border:2px solid var(--primary);" onclick="printKitchen()">🖨️ Print Kitchen</button>
+    <button class="btn-large" style="background:#e74c3c;color:#fff;" onclick="sendToKitchen()">🖨️ Send to Kitchen</button>
+    <button class="btn-large" style="background:#fff;color:#888;border:1px solid #ddd;" onclick="backToMenu()">← Back to Menu</button>
   </div>
 </div>
 
@@ -1240,22 +1252,31 @@ function confirmCurry(){
 function addToHistory(ja,en,price,rate,qty){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
   var key=ja+'__'+price;var found=false;
-  for(var i=0;i<hist.length;i++){if(hist[i].key===key){hist[i].qty+=qty;found=true;break;}}
-  if(!found){hist.push({key:key,ja:ja,en:en,name:ja,price:price,rate:rate||0.10,qty:qty});}
+  for(var i=0;i<hist.length;i++){if(hist[i].key===key&&!hist[i].sent){hist[i].qty+=qty;found=true;break;}}
+  if(!found){hist.push({key:key,ja:ja,en:en,name:ja,price:price,rate:rate||0,qty:qty,sent:false});}
   localStorage.setItem('history_'+currentTable,JSON.stringify(hist));
   cloudSync(currentTable);updateFooter();
 }
 function updateFooter(){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
-  var total=0,cnt=0;
-  hist.forEach(function(i){total+=Math.floor(i.price*i.qty*(1+i.rate));cnt+=i.qty;});
-  var fc=document.getElementById('footer-cart-text');
+  var unsentCnt=0,unsentTotal=0,totalAll=0,sentCnt=0;
+  hist.forEach(function(i){
+    totalAll+=i.price*i.qty;
+    if(!i.sent){unsentCnt+=i.qty;unsentTotal+=i.price*i.qty;}
+    else{sentCnt+=i.qty;}
+  });
+  var fu=document.getElementById('footer-unsent-text');
+  if(fu){
+    if(unsentCnt>0){fu.innerText=unsentCnt+' items  ¥'+unsentTotal.toLocaleString();fu.style.color='var(--accent)';}
+    else{fu.innerText='なし';fu.style.color='#aaa';}
+  }
+  var btn=document.getElementById('btn-send-kitchen');
+  if(btn)btn.style.background=unsentCnt>0?'#e74c3c':'#bbb';
   var fh=document.getElementById('footer-hist-text');
-  if(fc)fc.innerText=cnt+' items  ¥'+total.toLocaleString()+' (税込)';
   if(fh){
     var g=localStorage.getItem('guests_'+currentTable)||0;
     var ci=localStorage.getItem('checkin_'+currentTable)||'--:--';
-    fh.innerText=currentTable+' / '+g+' guests / IN '+ci;
+    fh.innerText=currentTable+' / '+g+'名 / IN '+ci+'  送信済:'+sentCnt+'品  合計:¥'+totalAll.toLocaleString();
   }
 }
 
@@ -1265,22 +1286,34 @@ function renderHistoryList(){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
   list.innerHTML='';
   var total=0;
-  hist.forEach(function(item,idx){
-    var lineTotal=item.price*item.qty;
-    total+=lineTotal;
-    var row=document.createElement('div');row.className='list-row';
-    row.innerHTML='<div style="flex:1">'+
-      '<div style="font-weight:bold;font-size:14px;">'+item.ja+'</div>'+
-      '<div style="font-size:10px;color:#bbb;">'+item.en+'</div>'+
-      '<div style="font-size:12px;color:#aaa;">¥'+item.price.toLocaleString()+' × '+item.qty+'</div></div>'+
-      '<div style="text-align:right;">'+
-      '<div style="font-weight:bold;">¥'+lineTotal.toLocaleString()+'<small style="font-size:10px;font-weight:normal;color:#aaa;">税込</small></div>'+
-      '<div style="display:flex;gap:6px;margin-top:6px;">'+
-      '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',-1)">−</button>'+
-      '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',1)">＋</button>'+
-      '</div></div>';
-    list.appendChild(row);
-  });
+  function makeSection(label,color,items,canEdit){
+    if(items.length===0)return;
+    var sec=document.createElement('div');
+    sec.style.cssText='padding:8px 12px 4px;font-size:12px;font-weight:bold;color:'+color+';background:#f9f9f9;border-top:2px solid '+color+';';
+    sec.innerText=label;list.appendChild(sec);
+    items.forEach(function(item){
+      var idx=hist.indexOf(item);
+      var lineTotal=item.price*item.qty;total+=lineTotal;
+      var row=document.createElement('div');row.className='list-row';
+      row.style.cssText=item.sent?'opacity:0.6;':'';
+      row.innerHTML='<div style="flex:1">'+
+        '<div style="font-weight:bold;font-size:14px;">'+item.ja+'</div>'+
+        '<div style="font-size:10px;color:#bbb;">'+item.en+'</div>'+
+        '<div style="font-size:12px;color:#aaa;">¥'+item.price.toLocaleString()+' × '+item.qty+'</div></div>'+
+        '<div style="text-align:right;">'+
+        '<div style="font-weight:bold;">¥'+lineTotal.toLocaleString()+'</div>'+
+        (canEdit?'<div style="display:flex;gap:6px;margin-top:6px;">'+
+        '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',-1)">−</button>'+
+        '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',1)">＋</button>'+
+        '</div>':'')+
+        '</div>';
+      list.appendChild(row);
+    });
+  }
+  var unsent=hist.filter(function(i){return !i.sent;});
+  var sent=hist.filter(function(i){return i.sent;});
+  makeSection('📝 未送信（編集可）','#e74c3c',unsent,true);
+  makeSection('✅ 送信済み','#27ae60',sent,false);
   document.getElementById('history-summary').innerHTML=
     '<strong style="font-size:22px;">合計（税込）: ¥'+total.toLocaleString()+'</strong>';
 }
@@ -1409,23 +1442,39 @@ function pay(doPrint){
 }
 
 // ---- キッチン印刷 ----
-function printKitchen(){
-  if(typeof StarWebPrintBuilder==='undefined'){alert('Printer SDK not loaded');return;}
+function sendToKitchen(){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
-  if(hist.length===0){alert('No items in order');return;}
+  var unsent=hist.filter(function(i){return !i.sent;});
+  if(unsent.length===0){alert('未送信の注文がありません');return;}
   var now=new Date();
   var t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  var b=new StarWebPrintBuilder();var r='';
-  r+=b.createInitializationElement();
-  r+=b.createAlignmentElement({position:'center'});
-  r+=b.createTextElement({data:'JUNTARA CURRY - Kitchen\n',width:2,height:2});
-  r+=b.createTextElement({data:currentTable+'  '+t+'\n',width:1,height:1});
-  r+=b.createRuledLineElement({thickness:'medium'});
-  r+=b.createAlignmentElement({position:'left'});
-  hist.forEach(function(item){r+=b.createTextElement({data:item.en+'\n  x'+item.qty+'\n',width:1,height:1});});
-  r+=b.createCutPaperElement({type:'partial'});
-  sendToPrinter(getKitchenUrl(),r);
+  var sentCount=hist.filter(function(i){return i.sent;}).reduce(function(s,i){return s+i.qty;},0);
+  var roundLabel=sentCount>0?'【追加注文】':'';
+  if(typeof StarWebPrintBuilder!=='undefined'){
+    var b=new StarWebPrintBuilder();var r='';
+    r+=b.createInitializationElement();
+    r+=b.createAlignmentElement({position:'center'});
+    r+=b.createTextElement({data:'JUNTARA CURRY - Kitchen\n',width:2,height:2});
+    r+=b.createTextElement({data:currentTable+'  '+t+'\n',width:1,height:1});
+    if(roundLabel)r+=b.createTextElement({data:roundLabel+'\n',width:1,height:1});
+    r+=b.createRuledLineElement({thickness:'medium'});
+    r+=b.createAlignmentElement({position:'left'});
+    unsent.forEach(function(item){
+      r+=b.createTextElement({data:item.en+'\n  x'+item.qty+'\n',width:1,height:2});
+    });
+    r+=b.createCutPaperElement({type:'partial'});
+    sendToPrinter(getKitchenUrl(),r);
+  }
+  // 送信済みにマーク
+  hist.forEach(function(i){if(!i.sent)i.sent=true;});
+  localStorage.setItem('history_'+currentTable,JSON.stringify(hist));
+  cloudSync(currentTable);updateFooter();
+  // 送信完了フラッシュ
+  var btn=document.getElementById('btn-send-kitchen');
+  if(btn){btn.innerText='✅ Sent!';btn.style.background='#27ae60';
+    setTimeout(function(){btn.innerText='🖨️ Send to Kitchen';updateFooter();},1500);}
 }
+function printKitchen(){sendToKitchen();}
 
 function sendToPrinter(url,xml){
   if(typeof StarWebPrintTrader==='undefined'){alert('Printer SDK not loaded');return;}
