@@ -315,6 +315,7 @@ var NAAN_OPTIONS=[
 
 var CATEGORIES=[
   {id:'lunch',label:'LUNCH'},
+  {id:'biryani',label:'BIRYANI'},
 ];
 
 var LUNCH_CURRIES=[
@@ -331,6 +332,7 @@ var MENU_ITEMS=[
   {cat:'lunch',id:'l02',ja:'Bセット',en:'Set B',price:1050,isLunchSet:true,rate:0.10},
   {cat:'lunch',id:'l03',ja:'Cセット',en:'Set C',price:1300,isLunchSet:true,rate:0.10},
   {cat:'lunch',id:'l04',ja:'Dセット（スープカレー）',en:'Set D - Soup Curry',price:1200,isLunchSet:true,rate:0.10},
+  {cat:'biryani',id:'b01',ja:'週替り限定ビリヤニセット',en:'Weekly Biryani Set',price:1750,isBiryaniSet:true,rate:0.10},
 ];
 
 var currentTable='';
@@ -471,7 +473,99 @@ function addItem(itemId){
   if(!item)return;
   if(item.isCurry){openCurryModal(item);}
   else if(item.isLunchSet){openLunchModal(item);}
+  else if(item.isBiryaniSet){openBiryaniModal(item);}
   else{addToHistory(item.ja,item.en,item.price,item.rate,1);}
+}
+
+// ---- ビリヤニセットモーダル ----
+var BIRYANI_DRINKS=[
+  {id:'oj',ja:'オレンジジュース',en:'Orange Juice'},
+  {id:'oolong',ja:'ウーロン茶',en:'Oolong Tea'},
+  {id:'lassi',ja:'プレーンラッシー',en:'Plain Lassi'},
+  {id:'chai',ja:'アイスチャイ',en:'Iced Chai'},
+];
+var pendingBiryani=null;var selBiryaniSpice=null;var selBiryaniSize=null;var biryaniStep=1;
+
+function openBiryaniModal(item){
+  pendingBiryani=item;selBiryaniSpice=null;selBiryaniSize=null;biryaniStep=2;
+  renderBiryaniModal();
+  document.getElementById('overlay-curry').style.display='flex';
+}
+
+function renderBiryaniModal(){
+  var modal=document.getElementById('modal-curry');
+  modal.innerHTML='';
+
+  var titles=['','🌶️ Spice Level','🍚 Biryani Size','🥤 Soft Drink'];
+  var h=document.createElement('div');h.className='modal-title';
+  h.innerText=titles[biryaniStep];
+  modal.appendChild(h);
+
+  var sub=document.createElement('div');sub.style.cssText='font-size:12px;color:#888;margin-bottom:12px;';
+  var parts=[pendingBiryani.en];
+  if(selBiryaniSpice){var sp=SPICE_LEVELS.filter(function(s){return s.id===selBiryaniSpice;})[0];if(sp)parts.push(sp.en);}
+  if(selBiryaniSize)parts.push(selBiryaniSize==='large'?'Large +¥200':'Regular');
+  sub.innerText=parts.join(' — ');
+  modal.appendChild(sub);
+
+  if(biryaniStep===1){
+    // 辛さ選択
+    SPICE_LEVELS.forEach(function(s){
+      var b=document.createElement('button');b.className='spice-btn';b.innerText=s.en;
+      (function(sp){b.onclick=function(e){
+        e.stopPropagation();selBiryaniSpice=sp.id;biryaniStep=2;renderBiryaniModal();
+      };})(s);
+      modal.appendChild(b);
+    });
+
+  }else if(biryaniStep===2){
+    // サイズ選択
+    [
+      {id:'regular',ja:'普通',en:'Regular',extra:0},
+      {id:'large',ja:'大盛り',en:'Large',extra:200},
+    ].forEach(function(sz){
+      var b=document.createElement('button');b.className='naan-btn';
+      b.innerHTML='<span style="font-weight:bold;">'+sz.en+'</span>'
+        +'<span style="font-size:11px;color:#aaa;display:block;">'+sz.ja+'</span>'
+        +(sz.extra>0?'<span style="font-size:12px;color:#e67e22;float:right;">+¥'+sz.extra+'</span>':'<span style="font-size:12px;color:#888;float:right;">¥1,750</span>');
+      (function(s){b.onclick=function(e){
+        e.stopPropagation();selBiryaniSize=s.id;biryaniStep=3;renderBiryaniModal();
+      };})(sz);
+      modal.appendChild(b);
+    });
+    var bk=document.createElement('div');bk.style.cssText='color:#aaa;font-size:13px;margin-top:12px;cursor:pointer;text-align:center;';
+    bk.innerText='← Change spice';
+    bk.onclick=function(e){e.stopPropagation();biryaniStep=1;renderBiryaniModal();};
+    modal.appendChild(bk);
+
+  }else{
+    // ドリンク選択
+    BIRYANI_DRINKS.forEach(function(d){
+      var b=document.createElement('button');b.className='naan-btn';
+      b.innerHTML='<span style="font-weight:bold;">'+d.en+'</span>'
+        +'<span style="font-size:11px;color:#aaa;display:block;">'+d.ja+'</span>'
+        +'<span style="font-size:12px;color:#888;float:right;">Included</span>';
+      (function(dr){b.onclick=function(e){
+        e.stopPropagation();confirmBiryaniSet(dr);
+      };})(d);
+      modal.appendChild(b);
+    });
+    var bk2=document.createElement('div');bk2.style.cssText='color:#aaa;font-size:13px;margin-top:12px;cursor:pointer;text-align:center;';
+    bk2.innerText='← Change size';
+    bk2.onclick=function(e){e.stopPropagation();biryaniStep=2;renderBiryaniModal();};
+    modal.appendChild(bk2);
+  }
+}
+
+function confirmBiryaniSet(drink){
+  var extra=selBiryaniSize==='large'?200:0;
+  var sizeJa=selBiryaniSize==='large'?'大盛り':'普通';
+  var sizeEn=selBiryaniSize==='large'?'Large':'Regular';
+  var jaOpt='['+sizeJa+' / '+drink.ja+']';
+  var enOpt='['+sizeEn+' / '+drink.en+']';
+  addToHistory(pendingBiryani.ja+' '+jaOpt, pendingBiryani.en+' '+enOpt, pendingBiryani.price+extra, pendingBiryani.rate, 1);
+  document.getElementById('overlay-curry').style.display='none';
+  updateFooter();
 }
 
 // ---- ランチセットモーダル ----
