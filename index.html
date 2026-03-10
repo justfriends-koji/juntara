@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JUNTARA POS</title>
+<style>
+:root{--primary:#9b1b30;--secondary:#c0392b;--accent:#e8a000;--bg:#fdf6f0;--text:#2c1810;--green:#27ae60;--danger:#e74c3c;--info:#2980b9;--dark:#2c1810;}
+*{touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
+body{font-family:sans-serif;margin:0;background:var(--bg);color:var(--text);-webkit-user-select:none;overflow:hidden;height:100vh;height:100dvh;}
+header{background:var(--primary);color:#fff;padding:0 15px;display:flex;align-items:center;justify-content:space-between;height:55px;flex-shrink:0;}
+.header-left{display:flex;align-items:center;gap:8px;}
+.back-btn{font-size:26px;cursor:pointer;padding:5px;}
+.view{display:none;height:100vh;height:100dvh;width:100vw;flex-direction:column;position:absolute;top:0;left:0;background:var(--bg);}
+.view.active{display:flex;}
+/* 席選択 */
+.grid-tables{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:15px;overflow-y:auto;flex:1;}
+.table-btn{background:#fff;border:2px solid #ddd;padding:12px 5px;text-align:center;border-radius:12px;cursor:pointer;box-shadow:0 3px 6px rgba(0,0,0,0.08);min-height:85px;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+.table-btn.occupied{background:#fff8f0;border-color:var(--accent);}
+.table-label{font-weight:bold;font-size:16px;}
+.table-sub{font-size:11px;color:#888;margin-top:3px;}
+.price-badge{font-size:11px;color:var(--accent);font-weight:bold;margin-top:4px;}
+/* 客数 */
+.guest-input-container{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:25px;background:#fff;}
+.guest-num-display{font-size:60px;font-weight:bold;margin-bottom:20px;color:var(--primary);background:#f5e6e0;border-radius:15px;padding:15px;width:100%;max-width:400px;text-align:center;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:430px;margin:0 auto;}
+.key-btn{background:#fff;border:1px solid #ddd;padding:22px 0;font-size:30px;font-weight:bold;border-radius:12px;box-shadow:0 3px 5px rgba(0,0,0,0.08);cursor:pointer;}
+/* メニュー */
+.menu-container{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:95px;background:#f5e6e0;overflow-y:auto;border-right:1px solid #e0c8c0;flex-shrink:0;}
+.cat{padding:18px 6px;font-size:12px;text-align:center;border-bottom:1px solid #e0c8c0;cursor:pointer;color:#666;line-height:1.4;}
+.cat.active{background:#fff;color:var(--primary);font-weight:bold;border-left:5px solid var(--primary);}
+.item-grid{flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;align-content:start;background:#fff;padding-bottom:140px;}
+.item-card{background:#fff;border:1px solid #f0e0d8;border-radius:12px;padding:12px;display:flex;flex-direction:column;box-shadow:0 2px 6px rgba(155,27,48,0.07);}
+.item-name{font-size:10px;color:#aaa;line-height:1.4;margin-bottom:2px;}
+.item-en{font-weight:bold;font-size:13px;color:#2c1810;margin-bottom:6px;min-height:1.2em;}
+.item-price{color:var(--accent);font-weight:bold;font-size:14px;margin-bottom:8px;}
+.btn-add{background:var(--primary);color:#fff;border:none;padding:10px 0;border-radius:22px;font-size:14px;font-weight:bold;width:100%;box-shadow:0 3px 6px rgba(155,27,48,0.3);cursor:pointer;}
+footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3px 10px rgba(0,0,0,0.1);flex-shrink:0;}
+.footer-history{background:var(--dark);color:#fff;padding:10px 15px;display:flex;justify-content:space-between;font-size:13px;cursor:pointer;}
+.footer-cart{background:var(--accent);color:#fff;padding:16px 15px;display:flex;justify-content:space-between;font-weight:bold;font-size:17px;cursor:pointer;}
+/* 注文一覧 */
+.list-container{flex:1;overflow-y:auto;background:#fff;padding-bottom:100px;}
+.list-row{display:flex;justify-content:space-between;padding:16px;border-bottom:1px solid #f0e8e4;align-items:center;}
+.summary-area{padding:15px 20px;text-align:right;background:#fff;border-top:2px solid #f0e8e4;flex-shrink:0;line-height:1.7;font-size:14px;}
+.btn-large{width:90%;display:block;margin:10px auto;padding:18px;border:none;border-radius:35px;font-size:18px;font-weight:bold;cursor:pointer;text-align:center;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,0.12);}
+/* 管理画面 */
+.admin-nav{display:flex;background:#fff;border-bottom:1px solid #ddd;flex-shrink:0;overflow-x:auto;}
+.admin-nav-btn{flex:1;min-width:60px;padding:13px 6px;text-align:center;font-size:12px;font-weight:bold;color:#888;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+.admin-nav-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
+.sale-card{background:#fff;margin:10px;padding:14px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,0.08);border-left:8px solid var(--info);}
+.sale-time-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #f0f0f0;padding-bottom:8px;}
+.sale-time{font-size:17px;font-weight:bold;}
+.sale-table-badge{background:#eee;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:bold;}
+.sale-detail-info{font-size:13px;color:#666;margin-bottom:6px;}
+.sale-total-line{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+.sale-price-big{font-size:22px;font-weight:bold;color:var(--primary);}
+.btn-del-sale{background:var(--danger);color:#fff;border:none;padding:6px 12px;border-radius:18px;font-size:11px;cursor:pointer;}
+.report-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid #ddd;flex-shrink:0;}
+.btn-report{background:var(--info);color:#fff;border:none;padding:14px 0;border-radius:10px;font-weight:bold;font-size:13px;cursor:pointer;}
+/* モーダル */
+.overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:200;justify-content:center;align-items:center;padding:20px 0;}
+.modal{background:#fff;width:92%;max-width:360px;border-radius:20px;padding:20px;text-align:center;max-height:90dvh;overflow-y:auto;}
+.modal-title{font-weight:bold;font-size:17px;margin-bottom:15px;color:var(--primary);}
+.spice-btn{display:block;width:100%;margin:7px 0;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:16px;font-weight:bold;background:#fff;cursor:pointer;}
+.spice-btn.selected{border-color:var(--primary);background:#fff0f2;color:var(--primary);}
+.naan-btn{display:block;width:100%;margin:6px 0;padding:12px;border:2px solid #ddd;border-radius:10px;font-size:14px;background:#fff;cursor:pointer;text-align:left;}
+.naan-btn.selected{border-color:var(--accent);background:#fff8e0;}
+/* ログイン */
+.login-container{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:25px;background:#fff;}
+.login-input{width:100%;max-width:420px;padding:20px;margin-bottom:16px;border:2px solid #ddd;border-radius:15px;font-size:20px;background:#fafafa;-webkit-appearance:none;}
+.admin-btn{font-size:12px;cursor:pointer;padding:6px 12px;border:1px solid #ffd;border-radius:20px;color:#ffd;background:transparent;white-space:nowrap;}
+/* レシートサンプル */
+.receipt-sample{background:#fff;padding:10px;color:#000;font-family:monospace;text-align:left;font-size:11px;border:1px dashed #ccc;margin-bottom:10px;max-height:200px;overflow-y:auto;}
+.receipt-hr{border-top:1px dashed #000;margin:4px 0;}
+</style>
+</head>
+<body>
+
+<!-- 席追加モーダル -->
+<div id="overlay-add-table" class="overlay" style="display:none;">
+  <div class="modal">
+    <div style="font-weight:bold;font-size:17px;margin-bottom:16px;">＋ Add Seat</div>
+    <div style="text-align:left;margin-bottom:8px;font-size:13px;color:#888;">Name (customer name, seat number, etc.)</div>
+    <input id="new-table-name" type="text" placeholder="e.g. Window A, Tanaka..." maxlength="10"
+      style="width:100%;padding:16px;border:2px solid var(--primary);border-radius:12px;font-size:18px;margin-bottom:6px;box-sizing:border-box;-webkit-appearance:none;"
+      oninput="document.getElementById('name-char-count').innerText=this.value.length"
+      onkeydown="if(event.key==='Enter')confirmAddTable()">
+    <div style="text-align:right;font-size:12px;color:#bbb;margin-bottom:16px;"><span id="name-char-count">0</span>/10</div>
+    <button class="btn-large" style="background:var(--primary);color:#fff;margin-bottom:8px;" onclick="confirmAddTable()">Add</button>
+    <div style="color:#bbb;font-size:13px;cursor:pointer;padding:8px;text-align:center;" onclick="closeAddTableModal()">Cancel</div>
+  </div>
+</div>
+
+<!-- 席選択 -->
+<div id="view-index" class="view active">
+  <header>
+    <div class="admin-btn" id="admin-btn-label" onclick="checkAdminAuth()">Sales</div>
+    <div style="font-weight:bold;font-size:17px;letter-spacing:1px;">🍛 JUNTARA</div>
+    <div style="font-size:22px;cursor:pointer;color:#ffd;" onclick="location.reload()">↻</div>
+  </header>
+  <div class="grid-tables" id="table-grid"></div>
+</div>
+
+<!-- ログイン -->
+<div id="view-login" class="view">
+  <header><div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span>Login</span></div><span></span></header>
+  <div class="login-container">
+    <div style="font-size:20px;font-weight:bold;margin-bottom:25px;color:var(--primary);">Owner Login</div>
+    <input type="email" id="login-email" class="login-input" placeholder="Email">
+    <input type="password" id="login-pass" class="login-input" placeholder="Password">
+    <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="handleLogin()">Login</button>
+  </div>
+</div>
+
+<!-- 客数入力 -->
+<div id="view-guest" class="view">
+  <header><div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span id="guest-table-name"></span></div><span></span></header>
+  <div class="guest-input-container">
+    <div style="font-size:16px;color:#888;margin-bottom:10px;">Number of guests</div>
+    <div class="guest-num-display"><span id="guest-count-val">0</span> pax</div>
+    <div class="keypad" id="guest-keypad"></div>
+  </div>
+</div>
+
+<!-- メニュー -->
+<div id="view-menu" class="view">
+  <header>
+    <div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span id="menu-table-label">Order</span></div>
+    <span style="color:#ffd;font-size:13px;cursor:pointer;" onclick="printKitchen()">🖨️ Kitchen</span>
+  </header>
+  <div class="menu-container">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="item-grid" id="item-grid"></div>
+  </div>
+  <footer>
+    <div class="footer-history" onclick="showOrderHistory()"><span id="footer-hist-text">−</span><span>▶ View Order</span></div>
+    <div class="footer-cart" onclick="showOrderHistory()"><span>🛒 Total</span><span id="footer-cart-text">¥0</span></div>
+  </footer>
+</div>
+
+<!-- 注文一覧（修正画面） -->
+<div id="view-history" class="view">
+  <header><div class="header-left"><span class="back-btn" onclick="backToMenu()">＜</span><span>Order / Edit</span></div><span></span></header>
+  <div class="list-container" id="history-items-list"></div>
+  <div class="summary-area" id="history-summary"></div>
+  <div style="background:#fff;border-top:1px solid #ddd;padding-bottom:10px;">
+    <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="showCheckout()">Checkout →</button>
+    <button class="btn-large" style="background:#fff;color:var(--primary);border:2px solid var(--primary);" onclick="printKitchen()">🖨️ Print Kitchen</button>
+  </div>
+</div>
+
+<!-- 会計確定（三船POS準拠） -->
+<div id="view-checkout" class="view">
+  <header><div class="header-left"><span class="back-btn" onclick="showOrderHistory()">＜</span><span>Checkout</span></div><span></span></header>
+  <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 10px;">
+    <!-- 合計表示 -->
+    <div style="padding:30px 20px;background:#fff;border-radius:15px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.1);width:85%;">
+      <div id="checkout-final-total" style="font-size:40px;font-weight:bold;color:var(--primary);">¥0</div>
+      <div id="checkout-final-info" style="color:#666;font-size:12px;"></div>
+    </div>
+    <!-- 支払い方法 -->
+    <div style="width:85%;">
+      <div style="font-size:13px;color:#666;margin-bottom:8px;text-align:center;">Payment Method</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button id="co-pay-btn-cash"   onclick="selectPayment('現金')"      style="padding:12px;border:2px solid var(--primary);border-radius:10px;background:var(--primary);color:#fff;font-weight:bold;font-size:14px;cursor:pointer;">💴 Cash</button>
+        <button id="co-pay-btn-card"   onclick="selectPayment('クレジット')" style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">💳 Credit Card</button>
+        <button id="co-pay-btn-qr"     onclick="selectPayment('QR決済')"    style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">📱 QR Pay</button>
+        <button id="co-pay-btn-ic"     onclick="selectPayment('電子マネー')" style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">🔖 IC / e-Money</button>
+      </div>
+    </div>
+    <!-- 釣銭計算（現金時のみ） -->
+    <div id="change-calc-area" style="width:85%;background:#fff;border-radius:15px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+      <div style="font-size:13px;color:#666;margin-bottom:10px;text-align:center;">Change Calculator</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <span style="font-size:13px;color:#555;white-space:nowrap;">Received</span>
+        <input id="cash-received" type="number" placeholder="0" oninput="calcChange()" style="flex:1;min-width:0;padding:6px 8px;border:2px solid var(--primary);border-radius:8px;font-size:16px;text-align:right;font-weight:bold;">
+        <span style="font-size:13px;color:#555;white-space:nowrap;">¥</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;" id="quick-cash-btns"></div>
+      <div style="background:#f8f8f8;border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:12px;color:#999;">Change</div>
+        <div id="change-amount" style="font-size:28px;font-weight:bold;color:var(--accent);">-</div>
+      </div>
+    </div>
+  </div>
+  <!-- ボタン群 -->
+  <button class="btn-large" style="background:var(--info);color:#fff;padding:12px;margin:5px auto;" onclick="testPay()">[TEST] Complete</button>
+  <button class="btn-large" style="background:var(--accent);color:#fff;padding:12px;margin:5px auto;" onclick="openReceiptChoice()">🧾 Receipt & Pay</button>
+  <button class="btn-large" style="background:#8e44ad;color:#fff;padding:12px;margin:5px auto;" onclick="openRyoshuusho()">📄 Invoice & Pay</button>
+</div>
+
+<!-- 印刷確認モーダル -->
+<div id="overlay-receipt" class="overlay">
+  <div class="modal">
+    <div id="receipt-preview-area" style="display:none;">
+      <div class="modal-title">印刷プレビュー</div>
+      <div id="sample-receipt-content" class="receipt-sample"></div>
+    </div>
+    <div class="modal-title">Confirm Payment</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <button id="pay-btn-cash"  onclick="selectPayment('現金')"      style="padding:16px;border:2px solid var(--primary);border-radius:12px;background:var(--primary);color:#fff;font-weight:bold;font-size:15px;cursor:pointer;">💴 Cash</button>
+      <button id="pay-btn-card"  onclick="selectPayment('クレジット')" style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">💳 Credit Card</button>
+      <button id="pay-btn-qr"    onclick="selectPayment('QR決済')"    style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">📱 QR Pay</button>
+      <button id="pay-btn-ic"    onclick="selectPayment('電子マネー')" style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">🔖 IC / e-Money</button>
+    </div>
+    <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="pay(true)">🖨️ Print & Complete</button>
+    <button class="btn-large" style="background:#fff;color:#999;border:1px solid #ddd;" onclick="closeReceiptChoice()">Cancel</button>
+  </div>
+</div>
+
+<!-- 管理画面 -->
+<div id="view-admin" class="view">
+  <header>
+    <div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span>Sales</span></div>
+    <div style="font-size:12px;color:var(--danger);cursor:pointer;" onclick="logoutOwner()">Logout</div>
+  </header>
+  <div class="admin-nav">
+    <div id="nav-day"   class="admin-nav-btn active" onclick="showAdmin('day')">Today</div>
+    <div id="nav-dates" class="admin-nav-btn" onclick="showAdmin('dates')">Daily</div>
+    <div id="nav-dow"   class="admin-nav-btn" onclick="showAdmin('dow')">By Day</div>
+    <div id="nav-month" class="admin-nav-btn" onclick="showAdmin('month')">Monthly</div>
+    <div id="nav-menu"  class="admin-nav-btn" onclick="showAdmin('menu')">By Item</div>
+  </div>
+  <div id="month-selector-area" style="display:none;align-items:center;gap:10px;background:#fff;padding:10px 15px;border-bottom:1px solid #ddd;flex-shrink:0;">
+    <span style="font-size:13px;color:#666;">Month:</span>
+    <select id="month-selector" onchange="showAdmin(document.querySelector('.admin-nav-btn.active').id.replace('nav-',''))" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;flex:1;"></select>
+  </div>
+  <div id="admin-summary-area" style="padding:15px;background:var(--dark);color:#fff;display:flex;justify-content:space-around;text-align:center;font-size:13px;flex-shrink:0;">
+    <div>Orders<br><span id="sum-count" style="font-size:20px;font-weight:bold;">0</span></div>
+    <div>Guests<br><span id="sum-guests" style="font-size:20px;font-weight:bold;">0</span></div>
+    <div>Total<br>¥<span id="sum-total" style="font-size:20px;font-weight:bold;">0</span></div>
+  </div>
+  <div id="sales-type-summary-area" style="background:#444;color:#fff;padding:10px 15px;font-size:12px;display:none;flex-wrap:wrap;gap:8px;justify-content:center;flex-shrink:0;"></div>
+  <div id="payment-summary-area" style="background:#555;color:#fff;padding:10px 15px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;flex-shrink:0;"></div>
+  <div class="report-btns">
+    <button class="btn-report" onclick="printReport('day')">Daily Report</button>
+    <button class="btn-report" onclick="printReport('month')" style="background:var(--accent);">Monthly</button>
+    <button class="btn-report" onclick="exportCSV()" style="background:#8e44ad;">CSV</button>
+  </div>
+  <div class="list-container" id="sales-list" style="background:#f4f4f4;padding:5px 0;"></div>
+</div>
+
+<!-- 領収書モーダル -->
+<div id="overlay-ryoshuusho" class="overlay">
+  <div class="modal">
+    <div class="modal-title">📄 Invoice</div>
+    <div style="font-size:12px;color:#888;margin-bottom:6px;text-align:left;">Recipient</div>
+    <input type="text" id="ryoshuusho-atena" placeholder="Customer" oninput="updateRyoshuushoPreview()"
+      style="width:100%;padding:12px 15px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:12px;box-sizing:border-box;-webkit-appearance:none;">
+    <div style="font-size:12px;color:#888;margin-bottom:6px;text-align:left;">Description</div>
+    <input type="text" id="ryoshuusho-tadashi" placeholder="For dining" oninput="updateRyoshuushoPreview()"
+      style="width:100%;padding:12px 15px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:16px;box-sizing:border-box;-webkit-appearance:none;">
+    <div id="ryoshuusho-preview" class="receipt-sample" style="margin-bottom:15px;font-size:12px;"></div>
+    <button class="btn-large" style="background:var(--primary);color:#fff;margin-bottom:8px;" onclick="printRyoshuusho()">🖨️ Print & Complete</button>
+    <div style="color:#aaa;font-size:13px;cursor:pointer;text-align:center;" onclick="closeRyoshuusho()">Cancel</div>
+  </div>
+</div>
+
+<!-- カレーモーダル -->
+<div id="overlay-curry" class="overlay" onclick="if(event.target===this)closeCurryModal()">
+  <div class="modal" id="modal-curry"></div>
+</div>
+
+<!-- Shift-JIS変換 -->
+<script>
+var _SJIS={165:92,8213:[129,92],12540:[129,91],12539:[129,69],12288:[129,64],12289:[129,65],12290:[129,66],12291:[129,86],12293:[129,88],12294:[129,89],12295:[129,90],12296:[129,113],12297:[129,114],12298:[129,115],12299:[129,116],12300:[129,117],12301:[129,118],12302:[129,119],12303:[129,120],12304:[129,121],12305:[129,122],12306:[129,167],12307:[129,172],12308:[129,107],12309:[129,108],12316:[129,96],12353:[130,159],12354:[130,160],12355:[130,161],12356:[130,162],12357:[130,163],12358:[130,164],12359:[130,165],12360:[130,166],12361:[130,167],12362:[130,168],12363:[130,169],12364:[130,170],12365:[130,171],12366:[130,172],12367:[130,173],12368:[130,174],12369:[130,175],12370:[130,176],12371:[130,177],12372:[130,178],12373:[130,179],12374:[130,180],12375:[130,181],12376:[130,182],12377:[130,183],12378:[130,184],12379:[130,185],12380:[130,186],12381:[130,187],12382:[130,188],12383:[130,189],12384:[130,190],12385:[130,191],12386:[130,192],12387:[130,193],12388:[130,194],12389:[130,195],12390:[130,196],12391:[130,197],12392:[130,198],12393:[130,199],12394:[130,200],12395:[130,201],12396:[130,202],12397:[130,203],12398:[130,204],12399:[130,205],12400:[130,206],12401:[130,207],12402:[130,208],12403:[130,209],12404:[130,210],12405:[130,211],12406:[130,212],12407:[130,213],12408:[130,214],12409:[130,215],12410:[130,216],12411:[130,217],12412:[130,218],12413:[130,219],12414:[130,220],12415:[130,221],12416:[130,222],12417:[130,223],12418:[130,224],12419:[130,225],12420:[130,226],12421:[130,227],12422:[130,228],12423:[130,229],12424:[130,230],12425:[130,231],12426:[130,232],12427:[130,233],12428:[130,234],12429:[130,235],12430:[130,236],12431:[130,237],12432:[130,238],12433:[130,239],12434:[130,240],12435:[130,241],12449:[131,64],12450:[131,65],12451:[131,66],12452:[131,67],12453:[131,68],12454:[131,69],12455:[131,70],12456:[131,71],12457:[131,72],12458:[131,73],12459:[131,74],12460:[131,75],12461:[131,76],12462:[131,77],12463:[131,78],12464:[131,79],12465:[131,80],12466:[131,81],12467:[131,82],12468:[131,83],12469:[131,84],12470:[131,85],12471:[131,86],12472:[131,87],12473:[131,88],12474:[131,89],12475:[131,90],12476:[131,91],12477:[131,92],12478:[131,93],12479:[131,94],12480:[131,95],12481:[131,96],12482:[131,97],12483:[131,98],12484:[131,99],12485:[131,100],12486:[131,101],12487:[131,102],12488:[131,103],12489:[131,104],12490:[131,105],12491:[131,106],12492:[131,107],12493:[131,108],12494:[131,109],12495:[131,110],12496:[131,111],12497:[131,112],12498:[131,113],12499:[131,114],12500:[131,115],12501:[131,116],12502:[131,117],12503:[131,118],12504:[131,119],12505:[131,120],12506:[131,121],12507:[131,122],12508:[131,123],12509:[131,124],12510:[131,125],12511:[131,126],12512:[131,128],12513:[131,129],12514:[131,130],12515:[131,131],12516:[131,132],12517:[131,133],12518:[131,134],12519:[131,135],12520:[131,136],12521:[131,137],12522:[131,138],12523:[131,139],12524:[131,140],12525:[131,141],12526:[131,142],12527:[131,143],12528:[131,144],12529:[131,145],12530:[131,146],12531:[131,147],12532:[131,148],12533:[131,149],12534:[131,150]};
+function _toSJISBytes(str){var out=[];for(var i=0;i<str.length;i++){var cp=str.codePointAt(i);if(cp>0xFFFF){i++;out.push(63);continue;}if(cp<128){out.push(cp);continue;}if(cp>=161&&cp<=223){out.push(cp);continue;}var s=_SJIS[cp];if(!s){out.push(63);continue;}if(Array.isArray(s)){out.push(s[0],s[1]);}else{out.push(s);}}return out;}
+(function(){var _o=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(b){if(b&&typeof b==='string'&&b.indexOf('StarWebPrint')!==-1){try{var by=_toSJISBytes(b);_o.call(this,new Uint8Array(by).buffer);return;}catch(e){}}_o.call(this,b);};})();
+</script>
+
+<!-- UIコア -->
+<script>
+var STORE_ID='juntara';
+var KITCHEN_URL='http://192.168.1.100/StarWebPRNT/SendMessage';
+var RECEIPT_URL='http://192.168.1.101/StarWebPRNT/SendMessage';
+
+var TABLES=[
+  {id:'T-1',label:'T-1',sub:'テーブル'},
+  {id:'T-2',label:'T-2',sub:'テーブル'},
+  {id:'T-3',label:'T-3',sub:'テーブル'},
+  {id:'C-1',label:'C-1',sub:'カウンター'},
+  {id:'C-2',label:'C-2',sub:'カウンター'},
+  {id:'C-3',label:'C-3',sub:'カウンター'},
+  {id:'C-4',label:'C-4',sub:'カウンター'},
+  {id:'C-5',label:'C-5',sub:'カウンター'},
+  {id:'C-6',label:'C-6',sub:'カウンター'},
+  {id:'TO',label:'テイクアウト',sub:'持ち帰り'}
+];
+
+var SPICE_LEVELS=[
+  {id:'no0',ja:'No.0 辛さなし',en:'No.0 No Spice'},
+  {id:'no1',ja:'No.1 甘口',en:'No.1 Mild'},
+  {id:'no2',ja:'No.2 普通',en:'No.2 Medium'},
+  {id:'no5',ja:'No.5 中辛',en:'No.5 Med-Hot'},
+  {id:'no10',ja:'No.10 辛口',en:'No.10 Hot'},
+  {id:'no20',ja:'No.20 激辛',en:'No.20 X-Hot'},
+  {id:'no50',ja:'No.50 超激辛',en:'No.50 XX-Hot'}
+];
+
+var NAAN_OPTIONS=[
+  {id:'plain-naan',ja:'プレーンナン',en:'Plain Naan',price:0},
+  {id:'rice',ja:'ライス',en:'Rice',price:0},
+  {id:'garlic-naan',ja:'ガーリックナン',en:'Garlic Naan',price:250},
+  {id:'cheese-naan',ja:'チーズナン',en:'Cheese Naan',price:350},
+  {id:'kabocha-naan',ja:'かぼちゃナン',en:'Pumpkin Naan',price:350},
+  {id:'bacon-cheese-naan',ja:'ベーコンチーズナン',en:'Bacon Cheese Naan',price:450},
+  {id:'keema-cheese-naan',ja:'キーマチーズナン',en:'Keema Cheese Naan',price:450},
+  {id:'honey-cheese-naan',ja:'はちみつ+チーズナン',en:'Honey & Cheese Naan',price:450},
+  {id:'anko-naan',ja:'あんこナン',en:'Anko Naan',price:450},
+  {id:'turmeric-rice',ja:'ターメリックバターライス',en:'Turmeric Butter Rice',price:150},
+  {id:'basmati-rice',ja:'バスマティライス',en:'Basmati Rice',price:200},
+  {id:'jeera-rice',ja:'ジーラライス',en:'Jeera Rice',price:250}
+];
+
+var CATEGORIES=[
+  {id:'curry',label:'CURRY'},
+  {id:'tandoori',label:'TANDOORI'},
+  {id:'snack',label:'SNACK\nSALAD'},
+  {id:'takeout',label:'テイク\nアウト'}
+];
+
+var MENU_ITEMS=[
+  {cat:'curry',id:'c01',ja:'チキンカレー',en:'Chicken Curry',price:1050,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c02',ja:'バターチキン',en:'Butter Chicken',price:1100,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c03',ja:'ラムカレー',en:'Lamb Curry',price:1400,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c04',ja:'ポークカレー',en:'Pork Curry',price:1100,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c05',ja:'ポークビンダル',en:'Pork Vindaloo',price:1100,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c06',ja:'キーマエッグ',en:'Keema Egg',price:1100,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c07',ja:'担々キーマ',en:'Tantanmen Keema',price:1200,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c08',ja:'ダル(豆)',en:'Dal',price:1000,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c09',ja:'ほうれん草チキン',en:'Palak Chicken',price:1100,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c10',ja:'ほうれん草ラム',en:'Palak Lamb',price:1450,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c11',ja:'野菜カレー',en:'Vegetable Curry',price:1050,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c12',ja:'えびカレー',en:'Prawn Curry',price:1400,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c13',ja:'なすチキンカレー',en:'Eggplant Chicken',price:1200,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c14',ja:'サグパニール',en:'Saag Paneer',price:1300,isCurry:true,rate:0.10},
+  {cat:'curry',id:'c15',ja:'パニールバターマサラ',en:'Paneer Butter Masala',price:1400,isCurry:true,rate:0.10},
+  {cat:'tandoori',id:'t01',ja:'タンドリーチキン 1pc',en:'Tandoori Chicken 1pc',price:400,rate:0.10},
+  {cat:'tandoori',id:'t02',ja:'タンドリーチキン 2pc',en:'Tandoori Chicken 2pc',price:750,rate:0.10},
+  {cat:'tandoori',id:'t03',ja:'スパイシータンドリー 1pc',en:'Spicy Tandoori 1pc',price:400,rate:0.10},
+  {cat:'tandoori',id:'t04',ja:'スパイシータンドリー 2pc',en:'Spicy Tandoori 2pc',price:750,rate:0.10},
+  {cat:'tandoori',id:'t05',ja:'チキンティッカ 2pc',en:'Chicken Tikka 2pc',price:600,rate:0.10},
+  {cat:'tandoori',id:'t06',ja:'シシカバブ 2pc',en:'Shish Kebab 2pc',price:600,rate:0.10},
+  {cat:'tandoori',id:'t07',ja:'タンドリーポーク 5pc',en:'Tandoori Pork 5pc',price:700,rate:0.10},
+  {cat:'tandoori',id:'t08',ja:'ポレコチキン 5pc',en:'Poleko Chicken 5pc',price:600,rate:0.10},
+  {cat:'tandoori',id:'t09',ja:'チキンセクワ 5pc',en:'Chicken Sekuwa 5pc',price:700,rate:0.10},
+  {cat:'tandoori',id:'t10',ja:'ラムセクワ 5pc',en:'Lamb Sekuwa 5pc',price:850,rate:0.10},
+  {cat:'snack',id:'s01',ja:'チキンパコダ',en:'Chicken Pakora',price:700,rate:0.10},
+  {cat:'snack',id:'s02',ja:'野菜パコダ',en:'Veg Pakora',price:650,rate:0.10},
+  {cat:'snack',id:'s03',ja:'えびパコダ',en:'Prawn Pakora',price:800,rate:0.10},
+  {cat:'snack',id:'s04',ja:'パニールパコダ',en:'Paneer Pakora',price:800,rate:0.10},
+  {cat:'snack',id:'s05',ja:'ラムのスクティ',en:'Lamb Sukuti',price:900,rate:0.10},
+  {cat:'snack',id:'s06',ja:'パパド 3P',en:'Papad 3P',price:100,rate:0.10},
+  {cat:'snack',id:'s07',ja:'アチャール盛合せ',en:'Achar Assortment',price:500,rate:0.10},
+  {cat:'snack',id:'s08',ja:'ジュンタラスペシャルサラダ',en:'Juntara Special Salad',price:700,rate:0.10},
+  {cat:'snack',id:'s09',ja:'チャナチャット',en:'Chana Chaat',price:600,rate:0.10},
+  {cat:'takeout',id:'to01',ja:'容器・袋代',en:'Container Fee',price:50,rate:0.08}
+];
+
+var currentTable='';
+var selectedCat='curry';
+var pendingCurry=null;
+var curryStep=1;
+var selSpice=null,selSize=null,selNaan=null;
+var currentPaymentMethod='現金';
+
+// ---- 画面遷移 ----
+function showView(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+function showIndex(){showView('view-index');renderIndex();}
+function backToMenu(){showView('view-menu');renderSidebar();renderItems();updateFooter();}
+function showOrderHistory(){showView('view-history');renderHistoryList();}
+function checkAdminAuth(){if(window._fbCurrentUser){showAdmin('day');}else{showView('view-login');}}
+
+var BASE_TABLES=TABLES;
+function getCustomTables(){return JSON.parse(localStorage.getItem('customTables')||'[]');}
+function saveCustomTables(arr){localStorage.setItem('customTables',JSON.stringify(arr));}
+function getAllTables(){return BASE_TABLES.concat(getCustomTables().map(function(n){return{id:n,label:n,sub:'Custom',isCustom:true};}));}
+
+// ---- 席選択 ----
+function renderIndex(){
+  var grid=document.getElementById('table-grid');if(!grid)return;
+  grid.innerHTML='';
+  getAllTables().forEach(function(t){
+    var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+t.id)||'[]');}catch(e){}
+    var occupied=hist.length>0;
+    var guests=localStorage.getItem('guests_'+t.id)||0;
+    var checkin=localStorage.getItem('checkin_'+t.id)||'--:--';
+    var total=0;hist.forEach(function(i){total+=Math.floor(i.price*i.qty*(1+i.rate));});
+    var btn=document.createElement('div');
+    btn.className='table-btn'+(occupied?' occupied':'');
+    var delBtn=t.isCustom?'<div onclick="removeCustomTable(\''+t.id+'\',event)" style="font-size:10px;color:#bbb;margin-top:4px;padding:2px 8px;border:1px solid #eee;border-radius:8px;">✕ Remove</div>':'';
+    btn.innerHTML='<div class="table-label">'+t.label+'</div><div class="table-sub">'+t.sub+'</div>'+
+      (occupied?'<div class="price-badge">'+guests+' pax '+checkin+'<br>¥'+total.toLocaleString()+'</div>':'')+delBtn;
+    (function(tid,tl){btn.onclick=function(e){if(e.target.onclick&&e.target!==btn)return;goToTable(tid,tl,occupied);};})(t.id,t.label);
+    grid.appendChild(btn);
+  });
+  // ＋ボタン
+  var addBtn=document.createElement('div');
+  addBtn.className='table-btn';
+  addBtn.style.cssText='border:2px dashed #ccc;background:transparent;color:#bbb;';
+  addBtn.innerHTML='<span style="font-size:28px;">＋</span><span style="font-size:11px;margin-top:4px;">Add Seat</span>';
+  addBtn.onclick=openAddTableModal;
+  grid.appendChild(addBtn);
+}
+function openAddTableModal(){
+  document.getElementById('new-table-name').value='';
+  document.getElementById('name-char-count').innerText='0';
+  document.getElementById('overlay-add-table').style.display='flex';
+  setTimeout(function(){document.getElementById('new-table-name').focus();},100);
+}
+function closeAddTableModal(){document.getElementById('overlay-add-table').style.display='none';}
+function confirmAddTable(){
+  var name=document.getElementById('new-table-name').value.trim();
+  if(!name){alert('Enter a name');return;}
+  var all=getAllTables().map(function(t){return t.id;});
+  if(all.indexOf(name)>=0){alert('"'+name+'" already exists');return;}
+  var customs=getCustomTables();customs.push(name);saveCustomTables(customs);
+  closeAddTableModal();renderIndex();
+}
+function removeCustomTable(tId,e){
+  e.stopPropagation();
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+tId)||'[]');}catch(ex){}
+  if(hist.length>0){alert('Cannot remove a seat with active orders');return;}
+  if(!confirm('Remove "'+tId+'"?'))return;
+  saveCustomTables(getCustomTables().filter(function(n){return n!==tId;}));
+  localStorage.removeItem('history_'+tId);localStorage.removeItem('guests_'+tId);localStorage.removeItem('checkin_'+tId);
+  renderIndex();
+}
+
+function goToTable(tId,label,occupied){
+  currentTable=tId;
+  document.getElementById('menu-table-label').innerText=label;
+  if(occupied){showView('view-menu');renderSidebar();renderItems();updateFooter();return;}
+  document.getElementById('guest-table-name').innerText=label;
+  document.getElementById('guest-count-val').innerText='0';
+  renderKeypad();showView('view-guest');
+}
+
+// ---- 客数 ----
+function renderKeypad(){
+  var kp=document.getElementById('guest-keypad');kp.innerHTML='';
+  [1,2,3,4,5,6,7,8,9,'C',0,'→'].forEach(function(k){
+    var b=document.createElement('button');b.className='key-btn';b.innerText=k;
+    (function(key){b.onclick=function(){
+      var el=document.getElementById('guest-count-val');
+      if(key==='C'){el.innerText='0';}
+      else if(key==='→'){confirmGuests();}
+      else{var v=parseInt(el.innerText)||0;el.innerText=(v===0?key:v.toString()+key);}
+    };})(k);
+    kp.appendChild(b);
+  });
+}
+function confirmGuests(){
+  var n=parseInt(document.getElementById('guest-count-val').innerText)||0;
+  var now=new Date();
+  var t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  localStorage.setItem('guests_'+currentTable,n);
+  localStorage.setItem('checkin_'+currentTable,t);
+  localStorage.setItem('history_'+currentTable,JSON.stringify([]));
+  cloudSync(currentTable);
+  document.getElementById('menu-table-label').innerText=currentTable;
+  showView('view-menu');renderSidebar();renderItems();updateFooter();
+}
+
+// ---- メニュー ----
+function renderSidebar(){
+  var sb=document.getElementById('sidebar');sb.innerHTML='';
+  CATEGORIES.forEach(function(c){
+    var div=document.createElement('div');
+    div.className='cat'+(selectedCat===c.id?' active':'');
+    div.innerHTML=c.label.replace('\n','<br>');
+    (function(cid){div.onclick=function(){selectedCat=cid;renderSidebar();renderItems();};})(c.id);
+    sb.appendChild(div);
+  });
+}
+function renderItems(){
+  var grid=document.getElementById('item-grid');grid.innerHTML='';
+  MENU_ITEMS.filter(function(m){return m.cat===selectedCat;}).forEach(function(item){
+    var card=document.createElement('div');card.className='item-card';
+    card.innerHTML='<div class="item-en">'+(item.isCurry?'🌶️ ':'')+item.en+'</div>'+
+      '<div class="item-name">'+item.ja+'</div>'+
+      '<div class="item-price">¥'+item.price.toLocaleString()+'</div>';
+    var btn=document.createElement('button');btn.className='btn-add';btn.innerText='Add';
+    (function(iid){btn.onclick=function(){addItem(iid);};})(item.id);
+    card.appendChild(btn);grid.appendChild(card);
+  });
+}
+function addItem(itemId){
+  var item=null;
+  for(var i=0;i<MENU_ITEMS.length;i++){if(MENU_ITEMS[i].id===itemId){item=MENU_ITEMS[i];break;}}
+  if(!item)return;
+  if(item.isCurry){openCurryModal(item);}else{addToHistory(item.ja,item.en,item.price,item.rate,1);}
+}
+
+// ---- カレーモーダル ----
+function openCurryModal(item){
+  pendingCurry=item;curryStep=1;selSpice=null;selSize=null;selNaan=null;
+  renderCurryModal();document.getElementById('overlay-curry').style.display='flex';
+}
+function closeCurryModal(){document.getElementById('overlay-curry').style.display='none';}
+function renderCurryModal(){
+  var modal=document.getElementById('modal-curry');modal.innerHTML='';
+  var h=document.createElement('div');h.className='modal-title';modal.appendChild(h);
+  if(curryStep===1){
+    h.innerText='🌶️ Spice Level';
+    var sub=document.createElement('div');sub.style.cssText='font-size:13px;color:#888;margin-bottom:10px;';sub.innerText=pendingCurry.en;modal.appendChild(sub);
+    SPICE_LEVELS.forEach(function(s){
+      var b=document.createElement('button');b.className='spice-btn'+(selSpice===s.id?' selected':'');b.innerText=s.ja;
+      (function(sid){b.onclick=function(){selSpice=sid;curryStep=2;renderCurryModal();};})(s.id);
+      modal.appendChild(b);
+    });
+  }else if(curryStep===2){
+    h.innerText='🍛 Size';
+    ['Regular','Large (+¥200)'].forEach(function(s,i){
+      var b=document.createElement('button');b.className='spice-btn';b.innerText=s;
+      (function(idx){b.onclick=function(){selSize=idx===0?'普通':'大盛り';curryStep=3;renderCurryModal();};})(i);
+      modal.appendChild(b);
+    });
+    var bk=document.createElement('div');bk.style.cssText='color:#aaa;font-size:13px;margin-top:10px;cursor:pointer;';bk.innerText='← Change spice level';
+    bk.onclick=function(){curryStep=1;renderCurryModal();};modal.appendChild(bk);
+  }else{
+    h.innerText='🍞 Naan / Rice';
+    NAAN_OPTIONS.forEach(function(n){
+      var b=document.createElement('button');b.className='naan-btn'+(selNaan===n.id?' selected':'');
+      b.innerHTML='<span style="font-weight:bold;">'+n.en+'</span><span style="font-size:11px;color:#aaa;display:block;">'+n.ja+'</span><span style="font-size:12px;color:#888;float:right;margin-top:-28px;">'+(n.price===0?'Included':'+¥'+n.price)+'</span>';
+      (function(nid){b.onclick=function(){selNaan=nid;renderCurryModal();};})(n.id);
+      modal.appendChild(b);
+    });
+    if(selNaan){
+      var ab=document.createElement('button');ab.className='btn-large';
+      ab.style.cssText='background:var(--primary);color:#fff;margin-top:12px;';
+      ab.innerText='Add to Order';ab.onclick=confirmCurry;modal.appendChild(ab);
+    }
+    var bk=document.createElement('div');bk.style.cssText='color:#aaa;font-size:13px;margin-top:8px;cursor:pointer;';bk.innerText='← Change size';
+    bk.onclick=function(){curryStep=2;renderCurryModal();};modal.appendChild(bk);
+  }
+}
+function confirmCurry(){
+  var spice=null,naan=null;
+  for(var i=0;i<SPICE_LEVELS.length;i++){if(SPICE_LEVELS[i].id===selSpice){spice=SPICE_LEVELS[i];break;}}
+  for(var i=0;i<NAAN_OPTIONS.length;i++){if(NAAN_OPTIONS[i].id===selNaan){naan=NAAN_OPTIONS[i];break;}}
+  var extra=selSize==='大盛り'?200:0;
+  var total=pendingCurry.price+extra+naan.price;
+  var jaOpt='['+spice.ja+' / '+selSize+']';
+  var enOpt='['+spice.en+' / '+(selSize==='大盛り'?'Large':'Regular')+']';
+  addToHistory(pendingCurry.ja+' '+jaOpt,pendingCurry.en+' '+enOpt,total,pendingCurry.rate,1);
+  addToHistory(naan.ja,naan.en,0,pendingCurry.rate,1);
+  closeCurryModal();
+}
+
+// ---- カート ----
+function addToHistory(ja,en,price,rate,qty){
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  var key=ja+'__'+price;var found=false;
+  for(var i=0;i<hist.length;i++){if(hist[i].key===key){hist[i].qty+=qty;found=true;break;}}
+  if(!found){hist.push({key:key,ja:ja,en:en,name:ja,price:price,rate:rate||0.10,qty:qty});}
+  localStorage.setItem('history_'+currentTable,JSON.stringify(hist));
+  cloudSync(currentTable);updateFooter();
+}
+function updateFooter(){
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  var total=0,cnt=0;
+  hist.forEach(function(i){total+=Math.floor(i.price*i.qty*(1+i.rate));cnt+=i.qty;});
+  var fc=document.getElementById('footer-cart-text');
+  var fh=document.getElementById('footer-hist-text');
+  if(fc)fc.innerText=cnt+' items  ¥'+total.toLocaleString()+' (tax incl.)';
+  if(fh){
+    var g=localStorage.getItem('guests_'+currentTable)||0;
+    var ci=localStorage.getItem('checkin_'+currentTable)||'--:--';
+    fh.innerText=currentTable+' / '+g+' guests / IN '+ci;
+  }
+}
+
+// ---- 注文一覧（修正） ----
+function renderHistoryList(){
+  var list=document.getElementById('history-items-list');
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  list.innerHTML='';
+  var subtotal=0,tax=0;
+  hist.forEach(function(item,idx){
+    var lineEx=item.price*item.qty;
+    var lineTax=Math.floor(lineEx*item.rate);
+    subtotal+=lineEx;tax+=lineTax;
+    var row=document.createElement('div');row.className='list-row';
+    row.innerHTML='<div style="flex:1">'+
+      '<div style="font-weight:bold;font-size:14px;">'+item.ja+'</div>'+
+      '<div style="font-size:10px;color:#bbb;">'+item.en+'</div>'+
+      '<div style="font-size:12px;color:#aaa;">¥'+item.price.toLocaleString()+' × '+item.qty+'</div></div>'+
+      '<div style="text-align:right;">'+
+      '<div style="font-weight:bold;">¥'+(lineEx+lineTax).toLocaleString()+'<small style="font-size:10px;font-weight:normal;color:#aaa;">税込</small></div>'+
+      '<div style="display:flex;gap:6px;margin-top:6px;">'+
+      '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',-1)">−</button>'+
+      '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',1)">＋</button>'+
+      '</div></div>';
+    list.appendChild(row);
+  });
+  document.getElementById('history-summary').innerHTML=
+    'Subtotal: ¥'+subtotal.toLocaleString()+' / Tax: ¥'+tax.toLocaleString()+
+    '<br><strong style="font-size:22px;">Total (incl. tax): ¥'+(subtotal+tax).toLocaleString()+'</strong>';
+}
+function changeQty(idx,delta){
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  hist[idx].qty+=delta;if(hist[idx].qty<=0)hist.splice(idx,1);
+  localStorage.setItem('history_'+currentTable,JSON.stringify(hist));
+  cloudSync(currentTable);renderHistoryList();updateFooter();
+}
+
+// ---- 会計（三船POS準拠） ----
+function showCheckout(){
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  if(hist.length===0){alert('No items in order');return;}
+  var total=hist.reduce(function(s,i){return s+Math.floor(i.price*i.qty*(1+i.rate));},0);
+  document.getElementById('checkout-final-total').innerText='¥'+total.toLocaleString();
+  document.getElementById('checkout-final-info').innerText=
+    'In: '+(localStorage.getItem('checkin_'+currentTable)||'--:--')+
+    ' / Guests: '+(localStorage.getItem('guests_'+currentTable)||0);
+  showView('view-checkout');
+  selectPayment('現金');
+  buildQuickCashBtns(total);
+}
+
+var currentPaymentMethod='現金';
+function selectPayment(method){
+  currentPaymentMethod=method;
+  var map={'現金':'cash','クレジット':'card','QR決済':'qr','電子マネー':'ic'};
+  ['cash','card','qr','ic'].forEach(function(k){
+    ['co-pay-btn-','pay-btn-'].forEach(function(prefix){
+      var btn=document.getElementById(prefix+k);
+      if(!btn)return;
+      var sel=(map[method]===k);
+      btn.style.background=sel?'var(--primary)':'#fff';
+      btn.style.color=sel?'#fff':'#333';
+      btn.style.borderColor=sel?'var(--primary)':'#ddd';
+    });
+  });
+  var calcArea=document.getElementById('change-calc-area');
+  if(calcArea){
+    calcArea.style.display=method==='現金'?'block':'none';
+    if(method==='現金'){
+      document.getElementById('cash-received').value='';
+      document.getElementById('change-amount').innerText='-';
+    }
+  }
+}
+function buildQuickCashBtns(total){
+  var presets=[1000,2000,5000,10000];
+  document.getElementById('quick-cash-btns').innerHTML=presets.map(function(v){
+    return '<button onclick="document.getElementById(\'cash-received\').value='+v+';calcChange();" '+
+      'style="flex:1;padding:10px 0;border:1px solid #ddd;border-radius:8px;background:#f8f8f8;font-size:13px;font-weight:bold;cursor:pointer;color:var(--info);">¥'+v.toLocaleString()+'</button>';
+  }).join('');
+}
+function calcChange(){
+  var total=parseInt(document.getElementById('checkout-final-total').innerText.replace(/[¥,]/g,''))||0;
+  var received=parseInt(document.getElementById('cash-received').value)||0;
+  var change=received-total;
+  var el=document.getElementById('change-amount');
+  if(received===0){el.innerText='-';el.style.color='var(--accent)';}
+  else if(change<0){el.innerText='¥'+Math.abs(change).toLocaleString()+' short';el.style.color='red';}
+  else{el.innerText='¥'+change.toLocaleString();el.style.color='var(--accent)';}
+}
+
+// テスト会計（印刷なし）
+function testPay(){
+  if(window._saveSaleToCloud)window._saveSaleToCloud(currentTable,currentPaymentMethod);
+  localStorage.removeItem('history_'+currentTable);
+  localStorage.removeItem('guests_'+currentTable);
+  localStorage.removeItem('checkin_'+currentTable);
+  showIndex();
+}
+
+// 本番会計モーダル
+function openReceiptChoice(){
+  document.getElementById('overlay-receipt').style.display='flex';
+}
+function closeReceiptChoice(){document.getElementById('overlay-receipt').style.display='none';}
+
+// 印刷して完了
+function pay(doPrint){
+  closeReceiptChoice();
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  var g=localStorage.getItem('guests_'+currentTable)||0;
+  var c=localStorage.getItem('checkin_'+currentTable)||'--:--';
+  if(doPrint&&typeof StarWebPrintBuilder!=='undefined'){
+    var b=new StarWebPrintBuilder();var r='';
+    r+=b.createInitializationElement();
+    r+=b.createPeripheralElement({channel:1,pulse:200});
+    var sub8=0,tax8=0,sub10=0,tax10=0;
+    r+=b.createAlignmentElement({position:'center'});
+    r+=b.createTextElement({data:'JUNTARA CURRY\n',width:2,height:2});
+    r+=b.createTextElement({data:'札幌市白石区東札幌2条3丁目8-9\nTEL: 011-313-0341\n',width:1,height:1});
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createAlignmentElement({position:'left'});
+    r+=b.createTextElement({data:'日時: '+new Date().toLocaleString()+'\n'});
+    r+=b.createTextElement({data:'Table: '+currentTable+'  Guests: '+g+'  In: '+c+'\n'});
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    hist.forEach(function(i){
+      var l=i.price*i.qty;var tx=Math.floor(l*i.rate);var taxInc=l+tx;
+      if(i.rate===0.08){sub8+=l;tax8+=tx;}else{sub10+=l;tax10+=tx;}
+      var mark=i.rate===0.08?'※':'';
+      r+=b.createTextElement({data:i.ja+mark+'\n  '+i.qty+'点 x ¥'+i.price.toLocaleString()+'    ¥'+taxInc.toLocaleString()+'内\n'});
+    });
+    var grandTotal=sub8+tax8+sub10+tax10;
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createTextElement({data:'小計/'+hist.reduce(function(s,i){return s+i.qty;},0)+'点\n'});
+    if(sub10>0)r+=b.createTextElement({data:'(内税10%対象  ¥'+(sub10+tax10).toLocaleString()+')\n'});
+    if(sub8>0)r+=b.createTextElement({data:'(※内税 8%対象  ¥'+(sub8+tax8).toLocaleString()+')\n'});
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createAlignmentElement({position:'center'});
+    r+=b.createTextElement({data:'合　計\n'});
+    r+=b.createTextElement({data:'¥'+grandTotal.toLocaleString()+'\n',width:2,height:2});
+    r+=b.createAlignmentElement({position:'left'});
+    r+=b.createTextElement({data:'--------------------------------\nお支払い: '+currentPaymentMethod+'\n'});
+    if(currentPaymentMethod==='現金'){
+      var received=parseInt(document.getElementById('cash-received').value)||0;
+      if(received>0)r+=b.createTextElement({data:'Received: ¥'+received.toLocaleString()+'\nChange:   ¥'+Math.max(0,received-grandTotal).toLocaleString()+'\n'});
+    }
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createAlignmentElement({position:'center'});
+    r+=b.createTextElement({data:'Thank you!\n\n'});
+    r+=b.createCutPaperElement({type:'partial'});
+    sendToPrinter(RECEIPT_URL,r);
+  }
+  if(window._saveSaleToCloud)window._saveSaleToCloud(currentTable,currentPaymentMethod);
+  localStorage.removeItem('history_'+currentTable);
+  localStorage.removeItem('guests_'+currentTable);
+  localStorage.removeItem('checkin_'+currentTable);
+  showIndex();
+}
+
+// ---- キッチン印刷 ----
+function printKitchen(){
+  if(typeof StarWebPrintBuilder==='undefined'){alert('Printer SDK not loaded');return;}
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  if(hist.length===0){alert('No items in order');return;}
+  var now=new Date();
+  var t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  var b=new StarWebPrintBuilder();var r='';
+  r+=b.createInitializationElement();
+  r+=b.createAlignmentElement({position:'center'});
+  r+=b.createTextElement({data:'JUNTARA CURRY - Kitchen\n',width:2,height:2});
+  r+=b.createTextElement({data:currentTable+'  '+t+'\n',width:1,height:1});
+  r+=b.createRuledLineElement({thickness:'medium'});
+  r+=b.createAlignmentElement({position:'left'});
+  hist.forEach(function(item){r+=b.createTextElement({data:item.en+'\n  x'+item.qty+'\n',width:1,height:1});});
+  r+=b.createCutPaperElement({type:'partial'});
+  sendToPrinter(KITCHEN_URL,r);
+}
+
+function sendToPrinter(url,xml){
+  if(typeof StarWebPrintTrader==='undefined'){alert('Printer SDK not loaded');return;}
+  var trader=new StarWebPrintTrader({url:url});
+  trader.onError=function(){alert('Printer connection error');};
+  trader.sendMessage({request:xml});
+}
+
+// ---- 領収書 ----
+function openRyoshuusho(){
+  document.getElementById('ryoshuusho-atena').value='';
+  document.getElementById('ryoshuusho-tadashi').value='For dining';
+  updateRyoshuushoPreview();
+  document.getElementById('overlay-ryoshuusho').style.display='flex';
+}
+function closeRyoshuusho(){document.getElementById('overlay-ryoshuusho').style.display='none';}
+function getRyoshuushoTotal(){
+  var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
+  var sub=0,tax=0;
+  hist.forEach(function(i){sub+=i.price*i.qty;tax+=Math.floor(i.price*i.qty*i.rate);});
+  return{sub:sub,tax:tax,total:sub+tax};
+}
+function updateRyoshuushoPreview(){
+  var atena=document.getElementById('ryoshuusho-atena').value||'Customer';
+  var tadashi=document.getElementById('ryoshuusho-tadashi').value||'For dining';
+  var t=getRyoshuushoTotal();
+  var now=new Date();
+  var dateStr=now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
+  document.getElementById('ryoshuusho-preview').innerHTML=
+    '<div style="text-align:center;font-weight:bold;font-size:14px;margin-bottom:6px;">INVOICE / 領収書</div>'+
+    '<div style="border-bottom:1px solid #000;padding-bottom:4px;margin-bottom:6px;font-size:13px;">To: '+atena+'</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;"><span>Amount</span><span style="font-weight:bold;font-size:16px;">¥'+t.total.toLocaleString()+'</span></div>'+
+    '<div style="font-size:11px;color:#555;margin-bottom:4px;">For: '+tadashi+'</div>'+
+    '<div style="font-size:11px;color:#555;margin-bottom:8px;">Payment received.</div>'+
+    '<div style="font-size:11px;color:#555;margin-bottom:6px;">'+dateStr+'</div>'+
+    '<div class="receipt-hr"></div>'+
+    '<div style="font-size:10px;color:#888;">Subtotal: ¥'+t.sub.toLocaleString()+' / Tax: ¥'+t.tax.toLocaleString()+'</div>'+
+    '<div style="font-size:11px;text-align:right;margin-top:6px;">JUNTARA CURRY<br>Higashi-Sapporo, Shiroishi-ku</div>';
+}
+function printRyoshuusho(){
+  var atena=document.getElementById('ryoshuusho-atena').value||'Customer';
+  var tadashi=document.getElementById('ryoshuusho-tadashi').value||'For dining';
+  var t=getRyoshuushoTotal();
+  var now=new Date();
+  var dateStr=now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
+  if(typeof StarWebPrintBuilder!=='undefined'){
+    var b=new StarWebPrintBuilder();var r='';
+    r+=b.createInitializationElement();
+    r+=b.createAlignmentElement({position:'center'});
+    r+=b.createTextElement({data:'INVOICE / \x97\xcc\x8e\xac\x8f\x91\n',width:2,height:2});
+    r+=b.createAlignmentElement({position:'left'});
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createTextElement({data:'To: '+atena+'\n\n'});
+    r+=b.createTextElement({data:'Amount: '});
+    r+=b.createAlignmentElement({position:'right'});
+    r+=b.createTextElement({data:'¥'+t.total.toLocaleString()+'\n',width:2,height:2});
+    r+=b.createAlignmentElement({position:'left'});
+    r+=b.createTextElement({data:'\nFor: '+tadashi+'\nPayment received.\n'+dateStr+'\n'});
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createTextElement({data:'Subtotal: ¥'+t.sub.toLocaleString()+'\nTax:      ¥'+t.tax.toLocaleString()+'\n'});
+    r+=b.createTextElement({data:'--------------------------------\n'});
+    r+=b.createAlignmentElement({position:'center'});
+    r+=b.createTextElement({data:'JUNTARA CURRY\nSapporo, Shiroishi-ku\nTEL: 011-313-0341\n\n'});
+    r+=b.createCutPaperElement({type:'partial'});
+    sendToPrinter(RECEIPT_URL,r);
+  }
+  closeRyoshuusho();
+  // 会計完了処理
+  if(window._saveSaleToCloud)window._saveSaleToCloud(currentTable,currentPaymentMethod);
+  localStorage.removeItem('history_'+currentTable);
+  localStorage.removeItem('guests_'+currentTable);
+  localStorage.removeItem('checkin_'+currentTable);
+  showIndex();
+}
+
+// ---- Firebase stubs ----
+function cloudSync(tableId){if(window._cloudSync)window._cloudSync(tableId);}
+function showAdmin(mode){if(window._showAdmin)window._showAdmin(mode);else alert('Connecting to Firebase...');}
+function logoutOwner(){if(window._logoutOwner)window._logoutOwner();}
+function handleLogin(){if(window._handleLogin)window._handleLogin();}
+function exportCSV(){if(window._exportCSV)window._exportCSV();}
+function printReport(m){if(window._printReport)window._printReport(m);}
+
+renderIndex();
+</script>
+
+<!-- Firebase -->
+<script type="module">
+(async function(){
+try{
+const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+const {getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection,addDoc,getDocs,Timestamp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+const {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+const FC={apiKey:"AIzaSyD_m3-1_fHNBNNhDRt6ZWXsilptcrvXCM",authDomain:"revoreji.firebaseapp.com",projectId:"revoreji",storageBucket:"revoreji.firebasestorage.app",messagingSenderId:"91184668244",appId:"1:91184668244:web:22e34995fe0f69d1e9d7c1"};
+const SID='juntara';
+const app=initializeApp(FC);
+const db=getFirestore(app);
+const auth=getAuth(app);
+window._fbCurrentUser=null;
+onAuthStateChanged(auth,function(user){
+  window._fbCurrentUser=user;
+  var btn=document.getElementById('admin-btn-label');
+  if(btn)btn.innerText=user?'Sales (Owner)':'Sales';
+});
+onSnapshot(collection(db,'stores/'+SID+'/tables'),function(snapshot){
+  var ids=snapshot.docs.map(function(d){return d.id;});
+  getAllTables().forEach(function(t){
+    if(ids.indexOf(t.id)<0){localStorage.removeItem('history_'+t.id);localStorage.removeItem('guests_'+t.id);localStorage.removeItem('checkin_'+t.id);}
+  });
+  snapshot.forEach(function(docSnap){
+    var d=docSnap.data();var tid=docSnap.id;
+    localStorage.setItem('history_'+tid,JSON.stringify(d.history||[]));
+    if(d.guests)localStorage.setItem('guests_'+tid,d.guests);
+    if(d.checkin)localStorage.setItem('checkin_'+tid,d.checkin);
+  });
+  renderIndex();
+});
+window._cloudSync=async function(tableId){
+  try{await setDoc(doc(db,'stores/'+SID+'/tables',tableId),{
+    history:JSON.parse(localStorage.getItem('history_'+tableId)||'[]'),
+    guests:parseInt(localStorage.getItem('guests_'+tableId))||0,
+    checkin:localStorage.getItem('checkin_'+tableId)||'',
+    updatedAt:Timestamp.now()
+  },{merge:true});}catch(e){console.warn('sync:',e.message);}
+};
+window._saveSaleToCloud=async function(tableId,payMethod){
+  var hist=JSON.parse(localStorage.getItem('history_'+tableId)||'[]');
+  if(!hist.length)return;
+  var guests=parseInt(localStorage.getItem('guests_'+tableId))||0;
+  var checkin=localStorage.getItem('checkin_'+tableId)||'';
+  var subtotal=0,tax=0;
+  hist.forEach(function(i){subtotal+=i.price*i.qty;tax+=Math.floor(i.price*i.qty*i.rate);});
+  var now=new Date();
+  var checkout=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  try{
+    await addDoc(collection(db,'stores/'+SID+'/sales'),{
+      tableId:tableId,guests:guests,checkin:checkin,checkout:checkout,
+      items:hist,subtotal:subtotal,tax:tax,total:subtotal+tax,
+      paymentMethod:payMethod||'現金',isTakeout:(tableId==='TO'),timestamp:Timestamp.now()
+    });
+    await deleteDoc(doc(db,'stores/'+SID+'/tables',tableId));
+  }catch(e){console.warn('sale:',e.message);}
+};
+window.getSalesData=async function(){
+  var snap=await getDocs(collection(db,'stores/'+SID+'/sales'));
+  var all=[];snap.forEach(function(d){var data=d.data();data.id=d.id;all.push(data);});
+  return all.sort(function(a,b){return b.timestamp-a.timestamp;});
+};
+window._showAdmin=async function(mode){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.getElementById('view-admin').classList.add('active');
+  document.querySelectorAll('.admin-nav-btn').forEach(function(b){b.classList.remove('active');});
+  var navId=mode==='month'?'month':mode==='dow'?'dow':mode==='dates'?'dates':mode==='menu'?'menu':'day';
+  var navEl=document.getElementById('nav-'+navId);if(navEl)navEl.classList.add('active');
+  var selArea=document.getElementById('month-selector-area');
+  selArea.style.display=(mode==='month'||mode==='menu'||mode==='dates'||mode==='dow')?'flex':'none';
+  var list=document.getElementById('sales-list');
+  list.innerHTML='<p style="text-align:center;padding:50px;">Loading...</p>';
+  var allSales=await window.getSalesData();
+  if(mode==='month'||mode==='dates'||mode==='dow'||mode==='menu'){
+    var monthSet={};
+    allSales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');monthSet[k]=d.getFullYear()+'/'+(d.getMonth()+1);});
+    var sel=document.getElementById('month-selector');var curVal=sel.value;
+    var now2=new Date();var defKey=now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0');
+    sel.innerHTML=Object.keys(monthSet).sort().reverse().map(function(k){return '<option value="'+k+'" '+((curVal||defKey)===k?'selected':'')+'>'+monthSet[k]+'</option>';}).join('');
+  }
+  var now=new Date();
+  function getSelYM(){return document.getElementById('month-selector').value.split('-').map(Number);}
+  var sales;
+  if(mode==='month'||mode==='dates'||mode==='dow'){var ym=getSelYM();sales=allSales.filter(function(s){var d=s.timestamp.toDate();return d.getFullYear()===ym[0]&&d.getMonth()+1===ym[1];});}
+  else if(mode==='day'){sales=allSales.filter(function(s){return s.timestamp.toDate().toDateString()===now.toDateString();});}
+  else{sales=allSales;}
+  var total=0,guests=0;
+  if(mode==='day'){
+    var cards=sales.map(function(s){total+=s.total;guests+=s.guests;
+      return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time">'+s.checkout+'</span><span class="sale-table-badge">'+s.tableId+'</span></div>'+
+        '<div class="sale-detail-info">Guests: '+s.guests+' / In: '+s.checkin+' / '+(s.paymentMethod||'Cash')+'</div>'+
+        '<div class="sale-total-line"><span class="sale-price-big">¥'+s.total.toLocaleString()+'</span>'+
+        (auth.currentUser?'<button class="btn-del-sale" onclick="window._delSale(\''+s.id+'\')">Delete</button>':'')+
+        '</div></div>';
+    }).join('')||'<p style="text-align:center;padding:50px;">No sales today</p>';
+    list.innerHTML=cards;
+  }else if(mode==='dates'){
+    var dayMap={};
+    sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['日','月','火','水','木','金','土'][d.getDay()];
+      if(!dayMap[k])dayMap[k]={label:k+'（'+dow+'）',t:0,c:0,g:0,ts:d.getTime(),ids:[],pay:{}};
+      dayMap[k].t+=s.total;dayMap[k].c++;dayMap[k].g+=s.guests;dayMap[k].ids.push(s.id);
+      var pm=s.paymentMethod||'現金';dayMap[k].pay[pm]=(dayMap[k].pay[pm]||0)+s.total;total+=s.total;guests+=s.guests;
+    });
+    window._dayDeleteMap=dayMap;
+    list.innerHTML=Object.values(dayMap).sort(function(a,b){return b.ts-a.ts;}).map(function(s){
+      var pd=Object.entries(s.pay).map(function(kv){return kv[0]+': ¥'+kv[1].toLocaleString();}).join(' / ');
+      return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time" style="font-size:15px;">'+s.label+'</span></div>'+
+        '<div class="sale-detail-info">Orders: '+s.c+' / Guests: '+s.g+'</div>'+
+        '<div class="sale-detail-info" style="color:#888;font-size:12px;">'+pd+'</div>'+
+        '<div class="sale-total-line"><span class="sale-price-big">¥'+s.t.toLocaleString()+'</span>'+
+        (auth.currentUser?'<button class="btn-del-sale" onclick="window._delDay(\''+s.label+'\')">Delete</button>':'')+
+        '</div></div>';
+    }).join('')||'<p style="text-align:center;padding:50px;">No data</p>';
+  }else if(mode==='dow'){
+    var labels=['日','月','火','水','木','金','土'];
+    var stats=labels.map(function(l){return{l:l,t:0,c:0,g:0};});
+    sales.forEach(function(s){var dow=s.timestamp.toDate().getDay();stats[dow].t+=s.total;stats[dow].c++;stats[dow].g+=s.guests;total+=s.total;guests+=s.guests;});
+    list.innerHTML=stats.map(function(s){return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time">'+s.l+'</span></div><div class="sale-detail-info">Orders: '+s.c+' / Guests: '+s.g+'</div><div class="sale-total-line"><span class="sale-price-big">¥'+s.t.toLocaleString()+'</span></div></div>';}).join('');
+  }else if(mode==='month'){
+    var dm2={};
+    sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['日','月','火','水','木','金','土'][d.getDay()];
+      if(!dm2[k])dm2[k]={label:k+'（'+dow+'）',t:0,c:0,g:0,ts:d.getTime()};
+      dm2[k].t+=s.total;dm2[k].c++;dm2[k].g+=s.guests;total+=s.total;guests+=s.guests;
+    });
+    list.innerHTML=Object.values(dm2).sort(function(a,b){return b.ts-a.ts;}).map(function(s){return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time" style="font-size:15px;">'+s.label+'</span></div><div class="sale-detail-info">Orders: '+s.c+' / Guests: '+s.g+'</div><div class="sale-total-line"><span class="sale-price-big">¥'+s.t.toLocaleString()+'</span></div></div>';}).join('')||'<p style="text-align:center;padding:50px;">No data</p>';
+  }else if(mode==='menu'){
+    var ym2=getSelYM();
+    var ms=allSales.filter(function(s){var d=s.timestamp.toDate();return d.getFullYear()===ym2[0]&&d.getMonth()+1===ym2[1];});
+    var im={};
+    ms.forEach(function(s){total+=s.total;guests+=s.guests;(s.items||[]).forEach(function(item){var name=item.ja||item.name||'?';if(!im[name])im[name]={qty:0,amount:0};im[name].qty+=item.qty;im[name].amount+=Math.floor(item.price*item.qty*(1+(item.rate||0.10)));});});
+    list.innerHTML='<div style="padding:12px 15px;background:#f8f8f8;font-size:13px;color:#666;border-bottom:1px solid #eee;">📅 '+ym2[0]+'/'+ym2[1]+' — Sales by Item (by qty)</div>'+
+      Object.entries(im).sort(function(a,b){return b[1].qty-a[1].qty;}).map(function(kv,i){return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time" style="font-size:14px;">'+(i+1)+'. '+kv[0]+'</span></div><div class="sale-detail-info">Qty: '+kv[1].qty+'</div><div class="sale-total-line"><span class="sale-price-big">¥'+kv[1].amount.toLocaleString()+'</span></div></div>';}).join('')||'<p style="text-align:center;padding:50px;">No data</p>';
+    document.getElementById('sum-count').innerText=ms.length;
+  }
+  document.getElementById('sum-total').innerText=total.toLocaleString();
+  document.getElementById('sum-guests').innerText=guests;
+  if(mode!=='menu')document.getElementById('sum-count').innerText=sales.length;
+  var typeArea=document.getElementById('sales-type-summary-area');
+  if(mode!=='menu'&&mode!=='dow'){
+    var tm={'店内':0,'テイクアウト':0};
+    sales.forEach(function(s){if(s.tableId==='TO')tm['テイクアウト']+=s.total;else tm['店内']+=s.total;});
+    typeArea.innerHTML=Object.entries(tm).map(function(kv){return '<span style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:10px;">'+kv[0]+': ¥'+kv[1].toLocaleString()+'</span>';}).join('');
+    typeArea.style.display='flex';
+  }else{typeArea.style.display='none';}
+  var payArea=document.getElementById('payment-summary-area');
+  if(mode!=='menu'&&mode!=='dow'){
+    var pm={};sales.forEach(function(s){var p=s.paymentMethod||'現金';if(!pm[p])pm[p]=0;pm[p]+=s.total;});
+    payArea.innerHTML=Object.entries(pm).map(function(kv){return '<span style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:10px;">'+kv[0]+': ¥'+kv[1].toLocaleString()+'</span>';}).join('');
+    payArea.style.display='flex';
+  }else{payArea.style.display='none';}
+};
+window._delSale=async function(id){if(!confirm('消去しますか？'))return;await deleteDoc(doc(db,'stores/'+SID+'/sales',id));setTimeout(function(){window._showAdmin('day');},500);};
+window._delDay=async function(label){
+  if(!confirm(label+'\nDelete all data for this day?'))return;
+  var dm=window._dayDeleteMap;if(dm&&dm[label]){for(var i=0;i<dm[label].ids.length;i++)await deleteDoc(doc(db,'stores/'+SID+'/sales',dm[label].ids[i]));}
+  setTimeout(function(){window._showAdmin('dates');},500);
+};
+window._logoutOwner=function(){signOut(auth);alert('Logged out');showIndex();};
+window._handleLogin=async function(){
+  var e=document.getElementById('login-email').value.trim();
+  var p=document.getElementById('login-pass').value.trim();
+  if(!e||!p)return;
+  try{await signInWithEmailAndPassword(auth,e,p);window._showAdmin('day');}catch(err){alert('Login failed');}
+};
+window._exportCSV=async function(){
+  var data=await window.getSalesData();
+  var csv='DateTime,Table,Guests,CheckIn,CheckOut,Payment,Total\n';
+  data.forEach(function(d){var dt=d.timestamp.toDate().toLocaleString('ja-JP');csv+=dt+','+d.tableId+','+(d.guests||0)+','+(d.checkin||'')+','+(d.checkout||'')+','+(d.paymentMethod||'現金')+','+(d.total||0)+'\n';});
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='juntara_sales.csv';a.click();
+};
+window._printReport=async function(mode){
+  if(typeof StarWebPrintBuilder==='undefined')return;
+  var data=await window.getSalesData();
+  var now=new Date();var label,filtered;
+  if(mode==='day'){label='日計';filtered=data.filter(function(s){return s.timestamp.toDate().toDateString()===now.toDateString();});}
+  else{label='月計';filtered=data.filter(function(s){var d=s.timestamp.toDate();return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});}
+  var total=0,guests=0;filtered.forEach(function(d){total+=d.total||0;guests+=d.guests||0;});
+  var b=new StarWebPrintBuilder();var r='';
+  r+=b.createInitializationElement();
+  r+=b.createAlignmentElement({position:'center'});
+  r+=b.createTextElement({data:'JUNTARA CURRY\n【'+label+'】\n',width:2,height:2});
+  r+=b.createTextElement({data:now.toLocaleDateString('ja-JP')+'\n',width:1,height:1});
+  r+=b.createRuledLineElement({thickness:'medium'});
+  r+=b.createAlignmentElement({position:'left'});
+  r+=b.createTextElement({data:'Orders: '+filtered.length+'\nGuests: '+guests+'\nTotal: ¥'+total.toLocaleString()+'\n',width:1,height:1});
+  r+=b.createCutPaperElement({type:'full'});
+  sendToPrinter(RECEIPT_URL,r);
+};
+console.log('✅ Firebase (juntara)');
+}catch(e){console.warn('⚠️ Firebase error:',e.message);}
+})();
+</script>
+
+<script src="https://starmicronics.com/support/WebPRNT/StarWebPRNT_SDK_1.3.1/StarWebPrintBuilder.js" onerror="console.warn('Star SDK未読み込み')"></script>
+<script src="https://starmicronics.com/support/WebPRNT/StarWebPRNT_SDK_1.3.1/StarWebPrintTrader.js" onerror="console.warn('Star SDK未読み込み')"></script>
+</body>
+</html>
