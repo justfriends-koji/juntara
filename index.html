@@ -343,6 +343,10 @@ var CATEGORIES=[
   {id:'choice',label:'CHOICE\nSET'},
   {id:'curry',label:'CURRY'},
   {id:'soup',label:'SOUP\nCURRY'},
+  {id:'nan',label:'NAN\nRICE'},
+  {id:'tandoori',label:'TANDOORI'},
+  {id:'side',label:'SIDE'},
+  {id:'drink',label:'DRINK'},
 ];
 
 var LUNCH_CURRIES=[
@@ -390,6 +394,49 @@ var MENU_ITEMS=[
   {cat:'soup',id:'sc07',ja:'ほうれん草チキンスープ',en:'Horenso Chicken Soup',price:1450,isSoupCurry:true,rate:0},
   {cat:'soup',id:'sc08',ja:'ヤギのスープカレー',en:'Goat Soup Curry',price:1600,isSoupCurry:true,rate:0},
   {cat:'soup',id:'sc09',ja:'生ラムスープカレー',en:'Nama Lamb Soup Curry',price:1850,isSoupCurry:true,rate:0},
+  {cat:'nan',id:'n01',ja:'プレーンナン',en:'Plain Nan',price:350,rate:0},
+  {cat:'nan',id:'n02',ja:'チョコチーズナン',en:'Choco Cheese Nan',price:600,rate:0},
+  {cat:'nan',id:'n03',ja:'チーズナン',en:'Cheese Nan',price:550,rate:0},
+  {cat:'nan',id:'n04',ja:'スパイシーポテトチーズナン',en:'Spicy Potato Cheese Nan',price:550,rate:0},
+  {cat:'nan',id:'n05',ja:'ガーリックナン',en:'Garlic Nan',price:400,rate:0},
+  {cat:'nan',id:'n06',ja:'キーマチーズナン',en:'Keema Cheese Nan',price:550,rate:0},
+  {cat:'nan',id:'n07',ja:'ベーコンチーズナン',en:'Bacon Cheese Nan',price:600,rate:0},
+  {cat:'nan',id:'n08',ja:'はちみつシナモンチーズナン',en:'Honey Cinnamon Cheese Nan',price:600,rate:0},
+  {cat:'nan',id:'n09',ja:'プレーンライス',en:'Plain Rice',price:300,rate:0},
+  {cat:'nan',id:'n10',ja:'ジーラライス',en:'Jeera Rice',price:350,rate:0},
+  {cat:'nan',id:'n11',ja:'ガーリックバターライス',en:'Garlic Butter Rice',price:350,rate:0},
+  {cat:'tandoori',id:'t01',ja:'タンドリーチキン 1P',en:'Tandoori Chicken 1pc',price:600,rate:0},
+  {cat:'tandoori',id:'t02',ja:'チキンティッカ 2P',en:'Chicken Tikka 2pc',price:750,rate:0},
+  {cat:'tandoori',id:'t03',ja:'シークケバブ 1P',en:'Seekh Kebab 1pc',price:400,rate:0},
+  {cat:'tandoori',id:'t04',ja:'ネパールビールセット',en:'Nepali Beer Set',price:850,rate:0},
+  {cat:'side',id:'si01',ja:'ジュンタラスペシャルサラダ',en:'Juntara Special Salad',price:600,rate:0},
+  {cat:'side',id:'si02',ja:'タンドリーチキンサラダ',en:'Tandoori Chicken Salad',price:650,rate:0},
+  {cat:'side',id:'si03',ja:'ネパール餃子モモ 6P',en:'Nepal Momo 6pc',price:650,rate:0},
+  {cat:'side',id:'si04',ja:'サモサ 1P',en:'Samosa 1pc',price:300,rate:0},
+  {cat:'side',id:'si05',ja:'サモサ 2P',en:'Samosa 2pc',price:500,rate:0},
+  {cat:'side',id:'si06',ja:'モモスープ',en:'Momo Soup',price:850,rate:0},
+  {cat:'side',id:'si07',ja:'パパド 3P',en:'Papad 3pc',price:100,rate:0},
+  {cat:'side',id:'si08',ja:'ジラアル',en:'Jeera Aloo',price:600,rate:0},
+  {cat:'drink',id:'dr01',ja:'ネパールビール',en:'Nepali Beer',price:650,rate:0},
+  {cat:'drink',id:'dr02',ja:'定番ビール',en:'Classic Beer',price:600,rate:0},
+  {cat:'drink',id:'dr03',ja:'キリンビール',en:'Kirin Beer',price:600,rate:0},
+  {cat:'drink',id:'dr04',ja:'インドビール',en:'Indian Beer',price:650,rate:0},
+  {cat:'drink',id:'dr05',ja:'ネパールラム',en:'Nepali Rum',price:550,rate:0},
+  {cat:'drink',id:'dr06',ja:'インドウイスキー',en:'Indian Whiskey',price:550,rate:0},
+  {cat:'drink',id:'dr07',ja:'ネパールラム＆コーラ',en:'Nepali Rum & Coke',price:650,rate:0},
+  {cat:'drink',id:'dr08',ja:'ネパールラム＆ラッシー',en:'Plain Rum & Lassi',price:650,rate:0},
+  {cat:'drink',id:'dr09',ja:'ネパールラム＆チャイ',en:'Nepali Rum & Chai',price:650,rate:0},
+  {cat:'drink',id:'dr10',ja:'ワイン',en:'Wine',price:400,rate:0},
+  {cat:'drink',id:'dr11',ja:'レモンサワー',en:'Lemon Sour',price:450,rate:0},
+  {cat:'drink',id:'dr12',ja:'ハイボール',en:'High Ball',price:450,rate:0},
+  {cat:'drink',id:'dr13',ja:'プレーンラッシー',en:'Plain Lassi',price:400,rate:0},
+  {cat:'drink',id:'dr14',ja:'フレーバーラッシー',en:'Flavoured Lassi',price:450,isFlavorLassi:true,rate:0},
+  {cat:'drink',id:'dr15',ja:'チャイ（ホット/アイス）',en:'Chai Hot/Ice',price:400,rate:0},
+  {cat:'drink',id:'dr16',ja:'コーヒー（ホット/アイス）',en:'Coffee Hot/Ice',price:350,rate:0},
+  {cat:'drink',id:'dr17',ja:'コーラ',en:'Cola',price:350,rate:0},
+  {cat:'drink',id:'dr18',ja:'ウーロン茶',en:'Oolong Tea',price:350,rate:0},
+  {cat:'drink',id:'dr19',ja:'オレンジジュース',en:'Orange Juice',price:350,rate:0},
+  {cat:'drink',id:'dr20',ja:'飲み放題 90分～',en:'All You Can Drink 90min',price:2300,rate:0},
 ];
 
 var currentTable='';
@@ -515,13 +562,42 @@ function renderItems(){
   var grid=document.getElementById('item-grid');grid.innerHTML='';
   MENU_ITEMS.filter(function(m){return m.cat===selectedCat;}).forEach(function(item){
     var card=document.createElement('div');card.className='item-card';
-    card.innerHTML='<div class="item-en">'+(item.isCurry?'🌶️ ':item.isLunchSet?'🍱 ':'')+item.en+'</div>'+
+    var needsModal=item.isCurry||item.isLunchSet||item.isBiryaniSet||item.isChoiceSet||item.isSoupCurry;
+    card.innerHTML='<div class="item-en">'+(item.isCurry?'🌶️ ':item.isLunchSet?'🍱 ':item.isSoupCurry?'🍲 ':'')+item.en+'</div>'+
       '<div class="item-name">'+item.ja+'</div>'+
       (item.isLunchSet?'<div style="font-size:10px;color:#aaa;margin-bottom:4px;">Curry + Naan or Rice + Salad + Drink</div>':'')+
       '<div class="item-price">¥'+item.price.toLocaleString()+'</div>';
-    var btn=document.createElement('button');btn.className='btn-add';btn.innerText='Add';
-    (function(iid){btn.onclick=function(){addItem(iid);};})(item.id);
-    card.appendChild(btn);grid.appendChild(card);
+    if(needsModal){
+      var btn=document.createElement('button');btn.className='btn-add';btn.innerText='Select';
+      (function(iid){btn.onclick=function(){addItem(iid);};})(item.id);
+      card.appendChild(btn);
+    }else{
+      // 数量＋/－コントロール
+      var qtyWrap=document.createElement('div');
+      qtyWrap.style.cssText='display:flex;align-items:center;gap:8px;margin-top:6px;';
+      var btnM=document.createElement('button');
+      btnM.style.cssText='width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);background:#fff;color:var(--accent);font-size:20px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+      btnM.innerText='−';
+      var qtyEl=document.createElement('div');
+      qtyEl.style.cssText='font-size:18px;font-weight:bold;min-width:24px;text-align:center;';
+      qtyEl.innerText='1';
+      var btnP=document.createElement('button');
+      btnP.style.cssText='width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);background:#fff;color:var(--accent);font-size:20px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+      btnP.innerText='+';
+      var btnAdd=document.createElement('button');btnAdd.className='btn-add';
+      btnAdd.style.cssText='flex:1;';btnAdd.innerText='Add';
+      btnM.onclick=function(e){e.stopPropagation();var v=parseInt(qtyEl.innerText);if(v>1)qtyEl.innerText=v-1;};
+      btnP.onclick=function(e){e.stopPropagation();var v=parseInt(qtyEl.innerText);qtyEl.innerText=v+1;};
+      (function(it,qe){btnAdd.onclick=function(){
+        var qty=parseInt(qe.innerText)||1;
+        addToHistory(it.ja,it.en,it.price,it.rate,qty);
+        qe.innerText='1';
+        updateFooter();
+      };})(item,qtyEl);
+      qtyWrap.appendChild(btnM);qtyWrap.appendChild(qtyEl);qtyWrap.appendChild(btnP);qtyWrap.appendChild(btnAdd);
+      card.appendChild(qtyWrap);
+    }
+    grid.appendChild(card);
   });
 }
 function addItem(itemId){
@@ -533,7 +609,29 @@ function addItem(itemId){
   else if(item.isBiryaniSet){openBiryaniModal(item);}
   else if(item.isChoiceSet){openChoiceModal(item);}
   else if(item.isSoupCurry){openSoupModal(item);}
-  else{addToHistory(item.ja,item.en,item.price,item.rate,1);}
+  else if(item.isFlavorLassi){openFlavorLassiModal();}
+  else{addToHistory(item.ja,item.en,item.price,item.rate,1);updateFooter();}
+}
+
+// ---- フレーバーラッシーモーダル ----
+function openFlavorLassiModal(){
+  var modal=document.getElementById('modal-curry');
+  modal.innerHTML='';
+  var h=document.createElement('div');h.className='modal-title';
+  h.innerText='🥛 Flavoured Lassi';modal.appendChild(h);
+  ['マンゴー','いちご','すいか','ブルーベリー','ココナッツ','バナナ'].forEach(function(f){
+    var b=document.createElement('button');b.className='naan-btn';
+    b.innerHTML='<span style="font-weight:bold;">'+f+'</span>'
+      +'<span style="font-size:12px;color:#888;float:right;">¥450</span>';
+    (function(flavor){b.onclick=function(e){
+      e.stopPropagation();
+      addToHistory('フレーバーラッシー '+flavor,'Flavoured Lassi ('+flavor+')',450,0,1);
+      document.getElementById('overlay-curry').style.display='none';
+      updateFooter();
+    };})(f);
+    modal.appendChild(b);
+  });
+  document.getElementById('overlay-curry').style.display='flex';
 }
 
 // ---- スープカレーモーダル ----
@@ -1153,7 +1251,7 @@ function updateFooter(){
   hist.forEach(function(i){total+=Math.floor(i.price*i.qty*(1+i.rate));cnt+=i.qty;});
   var fc=document.getElementById('footer-cart-text');
   var fh=document.getElementById('footer-hist-text');
-  if(fc)fc.innerText=cnt+' items  ¥'+total.toLocaleString()+' (tax incl.)';
+  if(fc)fc.innerText=cnt+' items  ¥'+total.toLocaleString()+' (税込)';
   if(fh){
     var g=localStorage.getItem('guests_'+currentTable)||0;
     var ci=localStorage.getItem('checkin_'+currentTable)||'--:--';
@@ -1166,18 +1264,17 @@ function renderHistoryList(){
   var list=document.getElementById('history-items-list');
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
   list.innerHTML='';
-  var subtotal=0,tax=0;
+  var total=0;
   hist.forEach(function(item,idx){
-    var lineEx=item.price*item.qty;
-    var lineTax=Math.floor(lineEx*item.rate);
-    subtotal+=lineEx;tax+=lineTax;
+    var lineTotal=item.price*item.qty;
+    total+=lineTotal;
     var row=document.createElement('div');row.className='list-row';
     row.innerHTML='<div style="flex:1">'+
       '<div style="font-weight:bold;font-size:14px;">'+item.ja+'</div>'+
       '<div style="font-size:10px;color:#bbb;">'+item.en+'</div>'+
       '<div style="font-size:12px;color:#aaa;">¥'+item.price.toLocaleString()+' × '+item.qty+'</div></div>'+
       '<div style="text-align:right;">'+
-      '<div style="font-weight:bold;">¥'+(lineEx+lineTax).toLocaleString()+'<small style="font-size:10px;font-weight:normal;color:#aaa;">税込</small></div>'+
+      '<div style="font-weight:bold;">¥'+lineTotal.toLocaleString()+'<small style="font-size:10px;font-weight:normal;color:#aaa;">税込</small></div>'+
       '<div style="display:flex;gap:6px;margin-top:6px;">'+
       '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',-1)">−</button>'+
       '<button style="padding:6px 12px;border-radius:15px;border:1px solid #ddd;background:#fff;font-size:18px;" onclick="changeQty('+idx+',1)">＋</button>'+
@@ -1185,8 +1282,7 @@ function renderHistoryList(){
     list.appendChild(row);
   });
   document.getElementById('history-summary').innerHTML=
-    'Subtotal: ¥'+subtotal.toLocaleString()+' / Tax: ¥'+tax.toLocaleString()+
-    '<br><strong style="font-size:22px;">Total (incl. tax): ¥'+(subtotal+tax).toLocaleString()+'</strong>';
+    '<strong style="font-size:22px;">合計（税込）: ¥'+total.toLocaleString()+'</strong>';
 }
 function changeQty(idx,delta){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
@@ -1274,7 +1370,6 @@ function pay(doPrint){
     var b=new StarWebPrintBuilder();var r='';
     r+=b.createInitializationElement();
     r+=b.createPeripheralElement({channel:1,pulse:200});
-    var sub8=0,tax8=0,sub10=0,tax10=0;
     r+=b.createAlignmentElement({position:'center'});
     r+=b.createTextElement({data:'JUNTARA CURRY\n',width:2,height:2});
     r+=b.createTextElement({data:'札幌市白石区東札幌2条3丁目8-9\nTEL: 011-313-0341\n',width:1,height:1});
@@ -1283,20 +1378,16 @@ function pay(doPrint){
     r+=b.createTextElement({data:'日時: '+new Date().toLocaleString()+'\n'});
     r+=b.createTextElement({data:'Table: '+currentTable+'  Guests: '+g+'  In: '+c+'\n'});
     r+=b.createTextElement({data:'--------------------------------\n'});
+    var grandTotal=0;
     hist.forEach(function(i){
-      var l=i.price*i.qty;var tx=Math.floor(l*i.rate);var taxInc=l+tx;
-      if(i.rate===0.08){sub8+=l;tax8+=tx;}else{sub10+=l;tax10+=tx;}
-      var mark=i.rate===0.08?'※':'';
-      r+=b.createTextElement({data:i.ja+mark+'\n  '+i.qty+'点 x ¥'+i.price.toLocaleString()+'    ¥'+taxInc.toLocaleString()+'内\n'});
+      var lineTotal=i.price*i.qty;grandTotal+=lineTotal;
+      r+=b.createTextElement({data:i.ja+'\n  '+i.qty+'点 x ¥'+i.price.toLocaleString()+'    ¥'+lineTotal.toLocaleString()+'\n'});
     });
-    var grandTotal=sub8+tax8+sub10+tax10;
     r+=b.createTextElement({data:'--------------------------------\n'});
-    r+=b.createTextElement({data:'小計/'+hist.reduce(function(s,i){return s+i.qty;},0)+'点\n'});
-    if(sub10>0)r+=b.createTextElement({data:'(内税10%対象  ¥'+(sub10+tax10).toLocaleString()+')\n'});
-    if(sub8>0)r+=b.createTextElement({data:'(※内税 8%対象  ¥'+(sub8+tax8).toLocaleString()+')\n'});
+    r+=b.createTextElement({data:'小計/'+hist.reduce(function(s,i){return s+i.qty;},0)+'点（税込）\n'});
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'center'});
-    r+=b.createTextElement({data:'合　計\n'});
+    r+=b.createTextElement({data:'合　計（税込）\n'});
     r+=b.createTextElement({data:'¥'+grandTotal.toLocaleString()+'\n',width:2,height:2});
     r+=b.createAlignmentElement({position:'left'});
     r+=b.createTextElement({data:'--------------------------------\nお支払い: '+currentPaymentMethod+'\n'});
@@ -1353,9 +1444,9 @@ function openRyoshuusho(){
 function closeRyoshuusho(){document.getElementById('overlay-ryoshuusho').style.display='none';}
 function getRyoshuushoTotal(){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
-  var sub=0,tax=0;
-  hist.forEach(function(i){sub+=i.price*i.qty;tax+=Math.floor(i.price*i.qty*i.rate);});
-  return{sub:sub,tax:tax,total:sub+tax};
+  var total=0;
+  hist.forEach(function(i){total+=i.price*i.qty;});
+  return{total:total};
 }
 function updateRyoshuushoPreview(){
   var atena=document.getElementById('ryoshuusho-atena').value||'Customer';
@@ -1366,12 +1457,11 @@ function updateRyoshuushoPreview(){
   document.getElementById('ryoshuusho-preview').innerHTML=
     '<div style="text-align:center;font-weight:bold;font-size:14px;margin-bottom:6px;">INVOICE / 領収書</div>'+
     '<div style="border-bottom:1px solid #000;padding-bottom:4px;margin-bottom:6px;font-size:13px;">To: '+atena+'</div>'+
-    '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;"><span>Amount</span><span style="font-weight:bold;font-size:16px;">¥'+t.total.toLocaleString()+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;"><span>Amount（税込）</span><span style="font-weight:bold;font-size:16px;">¥'+t.total.toLocaleString()+'</span></div>'+
     '<div style="font-size:11px;color:#555;margin-bottom:4px;">For: '+tadashi+'</div>'+
     '<div style="font-size:11px;color:#555;margin-bottom:8px;">Payment received.</div>'+
     '<div style="font-size:11px;color:#555;margin-bottom:6px;">'+dateStr+'</div>'+
     '<div class="receipt-hr"></div>'+
-    '<div style="font-size:10px;color:#888;">Subtotal: ¥'+t.sub.toLocaleString()+' / Tax: ¥'+t.tax.toLocaleString()+'</div>'+
     '<div style="font-size:11px;text-align:right;margin-top:6px;">JUNTARA CURRY<br>Higashi-Sapporo, Shiroishi-ku</div>';
 }
 function printRyoshuusho(){
@@ -1388,13 +1478,11 @@ function printRyoshuusho(){
     r+=b.createAlignmentElement({position:'left'});
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createTextElement({data:'To: '+atena+'\n\n'});
-    r+=b.createTextElement({data:'Amount: '});
+    r+=b.createTextElement({data:'Amount（税込）: '});
     r+=b.createAlignmentElement({position:'right'});
     r+=b.createTextElement({data:'¥'+t.total.toLocaleString()+'\n',width:2,height:2});
     r+=b.createAlignmentElement({position:'left'});
     r+=b.createTextElement({data:'\nFor: '+tadashi+'\nPayment received.\n'+dateStr+'\n'});
-    r+=b.createTextElement({data:'--------------------------------\n'});
-    r+=b.createTextElement({data:'Subtotal: ¥'+t.sub.toLocaleString()+'\nTax:      ¥'+t.tax.toLocaleString()+'\n'});
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'center'});
     r+=b.createTextElement({data:'JUNTARA CURRY\nSapporo, Shiroishi-ku\nTEL: 011-313-0341\n\n'});
@@ -1472,7 +1560,7 @@ window._saveSaleToCloud=async function(tableId,payMethod){
   try{
     await addDoc(collection(db,'stores/'+SID+'/sales'),{
       tableId:tableId,guests:guests,checkin:checkin,checkout:checkout,
-      items:hist,subtotal:subtotal,tax:tax,total:subtotal+tax,
+      items:hist,total:subtotal,
       paymentMethod:payMethod||'現金',isTakeout:(tableId==='TO'),timestamp:Timestamp.now()
     });
     await deleteDoc(doc(db,'stores/'+SID+'/tables',tableId));
