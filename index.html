@@ -93,11 +93,10 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
         style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
     </div>
     <div style="border-top:1px solid #eee;margin:14px 0;padding-top:14px;">
-      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🔐 Owner Login</div>
-      <input id="input-owner-email" type="email" placeholder="メールアドレス"
-        style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;margin-bottom:8px;">
-      <input id="input-owner-pass" type="password" placeholder="パスワード"
+      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🔐 Owner Password</div>
+      <input id="input-owner-pass" type="password" placeholder="新しいパスワード"
         style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">※入力した場合のみ更新されます</div>
     </div>
     <button onclick="saveSettings()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;">Save</button>
     <div id="settings-saved" style="text-align:center;color:green;font-size:13px;margin-top:10px;display:none;">✅ Saved!</div>
@@ -138,8 +137,8 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
   <header><div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span>Login</span></div><span></span></header>
   <div class="login-container">
     <div style="font-size:20px;font-weight:bold;margin-bottom:25px;color:var(--primary);">Owner Login</div>
+    <input type="password" id="login-pass-input" class="login-input" placeholder="パスワード">
     <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="handleLogin()">ログイン</button>
-    <div style="font-size:12px;color:#aaa;margin-top:12px;text-align:center;">※設定画面でメール・パスワードを登録してください</div>
   </div>
 </div>
 
@@ -1192,8 +1191,7 @@ function openCurryModal(item){
 function openSettings(){
   document.getElementById('input-kitchen-ip').value=localStorage.getItem('kitchenIp')||DEFAULT_KITCHEN_IP;
   document.getElementById('input-receipt-ip').value=localStorage.getItem('receiptIp')||DEFAULT_RECEIPT_IP;
-  document.getElementById('input-owner-email').value=localStorage.getItem('ownerEmail')||'';
-  document.getElementById('input-owner-pass').value=localStorage.getItem('ownerPass')||'';
+  document.getElementById('input-owner-pass').value='';
   document.getElementById('settings-saved').style.display='none';
   document.getElementById('overlay-settings').style.display='flex';
 }
@@ -1202,9 +1200,7 @@ function saveSettings(){
   var rip=document.getElementById('input-receipt-ip').value.trim();
   if(kip)localStorage.setItem('kitchenIp',kip);
   if(rip)localStorage.setItem('receiptIp',rip);
-  var em=document.getElementById('input-owner-email').value.trim();
   var pw=document.getElementById('input-owner-pass').value.trim();
-  if(em)localStorage.setItem('ownerEmail',em);
   if(pw)localStorage.setItem('ownerPass',pw);
   document.getElementById('settings-saved').style.display='block';
 }
@@ -1579,18 +1575,11 @@ renderIndex();
 try{
 const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
 const {getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection,addDoc,getDocs,Timestamp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-const {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 const FC={apiKey:"AIzaSyD_m3-1_fHNBNNhDRt6ZWXsilptcrvXCM",authDomain:"revoreji.firebaseapp.com",projectId:"revoreji",storageBucket:"revoreji.firebasestorage.app",messagingSenderId:"91184668244",appId:"1:91184668244:web:22e34995fe0f69d1e9d7c1"};
 const SID='juntara';
 const app=initializeApp(FC);
 const db=getFirestore(app);
-const auth=getAuth(app);
 window._fbCurrentUser=null;
-onAuthStateChanged(auth,function(user){
-  window._fbCurrentUser=user;
-  var btn=document.getElementById('admin-btn-label');
-  if(btn)btn.innerText=user?'Sales (Owner)':'Sales';
-});
 onSnapshot(collection(db,'stores/'+SID+'/tables'),function(snapshot){
   var ids=snapshot.docs.map(function(d){return d.id;});
   getAllTables().forEach(function(t){
@@ -1665,7 +1654,7 @@ window._showAdmin=async function(mode){
       return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time">'+s.checkout+'</span><span class="sale-table-badge">'+s.tableId+'</span></div>'+
         '<div class="sale-detail-info">Guests: '+s.guests+' / In: '+s.checkin+' / '+(s.paymentMethod||'Cash')+'</div>'+
         '<div class="sale-total-line"><span class="sale-price-big">¥'+s.total.toLocaleString()+'</span>'+
-        (auth.currentUser?'<button class="btn-del-sale" onclick="window._delSale(\''+s.id+'\')">Delete</button>':'')+
+        (window._fbCurrentUser?'<button class="btn-del-sale" onclick="window._delSale(\''+s.id+'\')">Delete</button>':'')+
         '</div></div>';
     }).join('')||'<p style="text-align:center;padding:50px;">No sales today</p>';
     list.innerHTML=cards;
@@ -1683,7 +1672,7 @@ window._showAdmin=async function(mode){
         '<div class="sale-detail-info">Orders: '+s.c+' / Guests: '+s.g+'</div>'+
         '<div class="sale-detail-info" style="color:#888;font-size:12px;">'+pd+'</div>'+
         '<div class="sale-total-line"><span class="sale-price-big">¥'+s.t.toLocaleString()+'</span>'+
-        (auth.currentUser?'<button class="btn-del-sale" onclick="window._delDay(\''+s.label+'\')">Delete</button>':'')+
+        (window._fbCurrentUser?'<button class="btn-del-sale" onclick="window._delDay(\''+s.label+'\')">Delete</button>':'')+
         '</div></div>';
     }).join('')||'<p style="text-align:center;padding:50px;">No data</p>';
   }else if(mode==='dow'){
@@ -1730,12 +1719,13 @@ window._delDay=async function(label){
   var dm=window._dayDeleteMap;if(dm&&dm[label]){for(var i=0;i<dm[label].ids.length;i++)await deleteDoc(doc(db,'stores/'+SID+'/sales',dm[label].ids[i]));}
   setTimeout(function(){window._showAdmin('dates');},500);
 };
-window._logoutOwner=function(){signOut(auth);alert('Logged out');showIndex();};
-window._handleLogin=async function(){
-  var e=localStorage.getItem('ownerEmail')||'';
-  var p=localStorage.getItem('ownerPass')||'';
-  if(!e||!p){alert('設定画面でメールとパスワードを登録してください');return;}
-  try{await signInWithEmailAndPassword(auth,e,p);window._showAdmin('day');}catch(err){alert('Login failed');}
+window._logoutOwner=function(){window._fbCurrentUser=null;var btn=document.getElementById('admin-btn-label');if(btn)btn.innerText='Sales';alert('Logged out');showIndex();};
+window._handleLogin=function(){
+  var input=document.getElementById('login-pass-input').value;
+  var saved=localStorage.getItem('ownerPass')||'';
+  if(!saved){alert('設定画面でパスワードを設定してください');return;}
+  if(input===saved){window._fbCurrentUser=true;var btn=document.getElementById('admin-btn-label');if(btn)btn.innerText='Sales (Owner)';window._showAdmin('day');}
+  else{alert('パスワードが違います');}
 };
 window._exportCSV=async function(){
   var data=await window.getSalesData();
