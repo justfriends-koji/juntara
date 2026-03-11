@@ -1241,10 +1241,12 @@ function confirmCurry(){
   for(var i=0;i<NAAN_OPTIONS.length;i++){if(NAAN_OPTIONS[i].id===selNaan){naan=NAAN_OPTIONS[i];break;}}
   var extra=selSize==='大盛り'?300:0;
   var total=pendingCurry.price+extra+naan.price;
-  var jaOpt='['+spice.ja+' / '+selSize+']';
-  var enOpt='['+spice.en+' / '+(selSize==='大盛り'?'Large':'Regular')+']';
-  addToHistory(pendingCurry.ja+' '+jaOpt,pendingCurry.en+' '+enOpt,total,pendingCurry.rate,1);
-  addToHistory(naan.ja,naan.en,0,pendingCurry.rate,1);
+  var sizeJa=selSize==='大盛り'?' 大盛り':'';
+  var sizeEn=selSize==='大盛り'?' Large':'';
+  var jaName=pendingCurry.ja+sizeJa;
+  var enName=pendingCurry.en+' '+spice.en+sizeEn;
+  addToHistory(jaName, enName, total, pendingCurry.rate, 1);
+  addToHistory(naan.ja, naan.en, 0, pendingCurry.rate, 1);
   closeCurryModal();
 }
 
@@ -1409,15 +1411,16 @@ function pay(doPrint){
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'left'});
     r+=b.createTextElement({data:'日時: '+new Date().toLocaleString()+'\n'});
-    r+=b.createTextElement({data:'Table: '+currentTable+'  Guests: '+g+'  In: '+c+'\n'});
+    r+=b.createTextElement({data:'席: '+currentTable+'  人数: '+g+'名  入店: '+c+'\n'});
     r+=b.createTextElement({data:'--------------------------------\n'});
     var grandTotal=0;
     hist.forEach(function(i){
       var lineTotal=i.price*i.qty;grandTotal+=lineTotal;
+      if(i.price===0)return; // ¥0アイテムは非表示
       r+=b.createTextElement({data:i.ja+'\n  '+i.qty+'点 x ¥'+i.price.toLocaleString()+'    ¥'+lineTotal.toLocaleString()+'\n'});
     });
     r+=b.createTextElement({data:'--------------------------------\n'});
-    r+=b.createTextElement({data:'小計/'+hist.reduce(function(s,i){return s+i.qty;},0)+'点（税込）\n'});
+    r+=b.createTextElement({data:'小計 '+hist.reduce(function(s,i){return s+i.qty;},0)+'点（税込）\n'});
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'center'});
     r+=b.createTextElement({data:'合　計（税込）\n'});
@@ -1426,11 +1429,11 @@ function pay(doPrint){
     r+=b.createTextElement({data:'--------------------------------\nお支払い: '+currentPaymentMethod+'\n'});
     if(currentPaymentMethod==='現金'){
       var received=parseInt(document.getElementById('cash-received').value)||0;
-      if(received>0)r+=b.createTextElement({data:'Received: ¥'+received.toLocaleString()+'\nChange:   ¥'+Math.max(0,received-grandTotal).toLocaleString()+'\n'});
+      if(received>0)r+=b.createTextElement({data:'お預かり: ¥'+received.toLocaleString()+'\nお釣り:   ¥'+Math.max(0,received-grandTotal).toLocaleString()+'\n'});
     }
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'center'});
-    r+=b.createTextElement({data:'Thank you!\n\n'});
+    r+=b.createTextElement({data:'ありがとうございました！\n\n'});
     r+=b.createCutPaperElement({type:'partial'});
     sendToPrinter(getReceiptUrl(),r);
   }
