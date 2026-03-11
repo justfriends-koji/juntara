@@ -1708,8 +1708,8 @@ window._showAdmin=async function(mode){
   if(mode!=='menu')document.getElementById('sum-count').innerText=sales.length;
   var typeArea=document.getElementById('sales-type-summary-area');
   if(mode!=='menu'&&mode!=='dow'){
-    var tm={'Dine-in':0,'Takeout':0};
-    sales.forEach(function(s){if(s.tableId==='TO')tm['Takeout']+=s.total;else tm['Dine-in']+=s.total;});
+    var tm={'Eat In':0,'Takeout':0};
+    sales.forEach(function(s){if(s.tableId==='TO')tm['Takeout']+=s.total;else tm['Eat In']+=s.total;});
     typeArea.innerHTML=Object.entries(tm).map(function(kv){return '<span style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:10px;">'+kv[0]+': ¥'+kv[1].toLocaleString()+'</span>';}).join('');
     typeArea.style.display='flex';
   }else{typeArea.style.display='none';}
