@@ -80,16 +80,23 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
 <!-- プリンター設定モーダル -->
 <div id="overlay-settings" class="overlay" style="display:none;" onclick="if(event.target===this)closeSettings()">
   <div class="modal">
-    <div class="modal-title">⚙️ Printer Settings</div>
+    <div class="modal-title">⚙️ Settings</div>
     <div style="font-size:13px;color:#888;margin-bottom:16px;">IPアドレスを入力して保存</div>
     <div style="margin-bottom:14px;">
       <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🍳 Kitchen Printer IP</div>
       <input id="input-kitchen-ip" type="text" placeholder="192.168.1.100"
         style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
     </div>
-    <div style="margin-bottom:20px;">
+    <div style="margin-bottom:14px;">
       <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🧾 Receipt Printer IP</div>
       <input id="input-receipt-ip" type="text" placeholder="192.168.1.101"
+        style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
+    </div>
+    <div style="border-top:1px solid #eee;margin:14px 0;padding-top:14px;">
+      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🔐 Owner Login</div>
+      <input id="input-owner-email" type="email" placeholder="メールアドレス"
+        style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;margin-bottom:8px;">
+      <input id="input-owner-pass" type="password" placeholder="パスワード"
         style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
     </div>
     <button onclick="saveSettings()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;">Save</button>
@@ -131,7 +138,8 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
   <header><div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span>Login</span></div><span></span></header>
   <div class="login-container">
     <div style="font-size:20px;font-weight:bold;margin-bottom:25px;color:var(--primary);">Owner Login</div>
-    <button class="btn-large" style="background:#4285f4;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;" onclick="handleLogin()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;background:#fff;border-radius:2px;padding:2px;">Googleでログイン</button>
+    <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="handleLogin()">ログイン</button>
+    <div style="font-size:12px;color:#aaa;margin-top:12px;text-align:center;">※設定画面でメール・パスワードを登録してください</div>
   </div>
 </div>
 
@@ -1184,6 +1192,8 @@ function openCurryModal(item){
 function openSettings(){
   document.getElementById('input-kitchen-ip').value=localStorage.getItem('kitchenIp')||DEFAULT_KITCHEN_IP;
   document.getElementById('input-receipt-ip').value=localStorage.getItem('receiptIp')||DEFAULT_RECEIPT_IP;
+  document.getElementById('input-owner-email').value=localStorage.getItem('ownerEmail')||'';
+  document.getElementById('input-owner-pass').value=localStorage.getItem('ownerPass')||'';
   document.getElementById('settings-saved').style.display='none';
   document.getElementById('overlay-settings').style.display='flex';
 }
@@ -1192,6 +1202,10 @@ function saveSettings(){
   var rip=document.getElementById('input-receipt-ip').value.trim();
   if(kip)localStorage.setItem('kitchenIp',kip);
   if(rip)localStorage.setItem('receiptIp',rip);
+  var em=document.getElementById('input-owner-email').value.trim();
+  var pw=document.getElementById('input-owner-pass').value.trim();
+  if(em)localStorage.setItem('ownerEmail',em);
+  if(pw)localStorage.setItem('ownerPass',pw);
   document.getElementById('settings-saved').style.display='block';
 }
 function closeSettings(){document.getElementById('overlay-settings').style.display='none';}
@@ -1565,7 +1579,7 @@ renderIndex();
 try{
 const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
 const {getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection,addDoc,getDocs,Timestamp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-const {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+const {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 const FC={apiKey:"AIzaSyD_m3-1_fHNBNNhDRt6ZWXsilptcrvXCM",authDomain:"revoreji.firebaseapp.com",projectId:"revoreji",storageBucket:"revoreji.firebasestorage.app",messagingSenderId:"91184668244",appId:"1:91184668244:web:22e34995fe0f69d1e9d7c1"};
 const SID='juntara';
 const app=initializeApp(FC);
@@ -1718,7 +1732,10 @@ window._delDay=async function(label){
 };
 window._logoutOwner=function(){signOut(auth);alert('Logged out');showIndex();};
 window._handleLogin=async function(){
-  try{const provider=new GoogleAuthProvider();await signInWithPopup(auth,provider);window._showAdmin('day');}catch(err){alert('Login failed: '+err.message);}
+  var e=localStorage.getItem('ownerEmail')||'';
+  var p=localStorage.getItem('ownerPass')||'';
+  if(!e||!p){alert('設定画面でメールとパスワードを登録してください');return;}
+  try{await signInWithEmailAndPassword(auth,e,p);window._showAdmin('day');}catch(err){alert('Login failed');}
 };
 window._exportCSV=async function(){
   var data=await window.getSalesData();
