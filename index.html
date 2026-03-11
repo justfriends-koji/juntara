@@ -171,7 +171,7 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
     </div>
     <div style="display:flex;width:100%;gap:0;">
       <div style="flex:1;background:#f5f5f5;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;" onclick="showOrderHistory()">
-        <div style="font-size:11px;color:#888;">未送信</div>
+        <div style="font-size:11px;color:#888;">Unsent</div>
         <div style="font-weight:bold;font-size:16px;color:var(--accent);" id="footer-unsent-text">0 items</div>
       </div>
       <button id="btn-send-kitchen" onclick="sendToKitchen()" style="flex:2;background:#e74c3c;color:#fff;border:none;font-size:18px;font-weight:bold;padding:14px;cursor:pointer;">
@@ -206,10 +206,10 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
     <div style="width:85%;">
       <div style="font-size:13px;color:#666;margin-bottom:8px;text-align:center;">Payment Method</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button id="co-pay-btn-cash"   onclick="selectPayment('現金')"      style="padding:12px;border:2px solid var(--primary);border-radius:10px;background:var(--primary);color:#fff;font-weight:bold;font-size:14px;cursor:pointer;">💴 Cash</button>
-        <button id="co-pay-btn-card"   onclick="selectPayment('クレジット')" style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">💳 Credit Card</button>
-        <button id="co-pay-btn-qr"     onclick="selectPayment('QR決済')"    style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">📱 QR Pay</button>
-        <button id="co-pay-btn-ic"     onclick="selectPayment('電子マネー')" style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">🔖 IC / e-Money</button>
+        <button id="co-pay-btn-cash"   onclick="selectPayment('Cash')"      style="padding:12px;border:2px solid var(--primary);border-radius:10px;background:var(--primary);color:#fff;font-weight:bold;font-size:14px;cursor:pointer;">💴 Cash</button>
+        <button id="co-pay-btn-card"   onclick="selectPayment('Credit')" style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">💳 Credit Card</button>
+        <button id="co-pay-btn-qr"     onclick="selectPayment('QR Pay')"    style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">📱 QR Pay</button>
+        <button id="co-pay-btn-ic"     onclick="selectPayment('IC/e-Money')" style="padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;color:#333;font-weight:bold;font-size:14px;cursor:pointer;">🔖 IC / e-Money</button>
       </div>
     </div>
     <!-- 釣銭計算（現金時のみ） -->
@@ -242,10 +242,10 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
     </div>
     <div class="modal-title">Confirm Payment</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-      <button id="pay-btn-cash"  onclick="selectPayment('現金')"      style="padding:16px;border:2px solid var(--primary);border-radius:12px;background:var(--primary);color:#fff;font-weight:bold;font-size:15px;cursor:pointer;">💴 Cash</button>
-      <button id="pay-btn-card"  onclick="selectPayment('クレジット')" style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">💳 Credit Card</button>
-      <button id="pay-btn-qr"    onclick="selectPayment('QR決済')"    style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">📱 QR Pay</button>
-      <button id="pay-btn-ic"    onclick="selectPayment('電子マネー')" style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">🔖 IC / e-Money</button>
+      <button id="pay-btn-cash"  onclick="selectPayment('Cash')"      style="padding:16px;border:2px solid var(--primary);border-radius:12px;background:var(--primary);color:#fff;font-weight:bold;font-size:15px;cursor:pointer;">💴 Cash</button>
+      <button id="pay-btn-card"  onclick="selectPayment('Credit')" style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">💳 Credit Card</button>
+      <button id="pay-btn-qr"    onclick="selectPayment('QR Pay')"    style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">📱 QR Pay</button>
+      <button id="pay-btn-ic"    onclick="selectPayment('IC/e-Money')" style="padding:16px;border:2px solid #ddd;border-radius:12px;background:#fff;color:#333;font-weight:bold;font-size:15px;cursor:pointer;">🔖 IC / e-Money</button>
     </div>
     <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="pay(true)">🖨️ Print & Complete</button>
     <button class="btn-large" style="background:#fff;color:#999;border:1px solid #ddd;" onclick="closeReceiptChoice()">Cancel</button>
@@ -462,7 +462,7 @@ var selectedCat='lunch';
 var pendingCurry=null;
 var curryStep=1;
 var selSpice=null,selSize=null,selNaan=null;
-var currentPaymentMethod='現金';
+var currentPaymentMethod='Cash';
 
 // ---- 画面遷移 ----
 function showView(id){
@@ -1293,7 +1293,7 @@ function updateFooter(){
   if(fh){
     var g=localStorage.getItem('guests_'+currentTable)||0;
     var ci=localStorage.getItem('checkin_'+currentTable)||'--:--';
-    fh.innerText=currentTable+' / '+g+'名 / IN '+ci+'  送信済:'+sentCnt+'品  合計:¥'+totalAll.toLocaleString();
+    fh.innerText=currentTable+' / '+g+' pax / IN '+ci+'  Sent:'+sentCnt+' Total: ¥'+totalAll.toLocaleString();
   }
 }
 
@@ -1314,8 +1314,8 @@ function renderHistoryList(){
       var row=document.createElement('div');row.className='list-row';
       row.style.cssText=item.sent?'opacity:0.6;':'';
       row.innerHTML='<div style="flex:1">'+
-        '<div style="font-weight:bold;font-size:14px;">'+item.ja+'</div>'+
-        '<div style="font-size:10px;color:#bbb;">'+item.en+'</div>'+
+        '<div style="font-weight:bold;font-size:14px;">'+item.en+'</div>'+
+        '<div style="font-size:10px;color:#bbb;">'+item.ja+'</div>'+
         '<div style="font-size:12px;color:#aaa;">¥'+item.price.toLocaleString()+' × '+item.qty+'</div></div>'+
         '<div style="text-align:right;">'+
         '<div style="font-weight:bold;">¥'+lineTotal.toLocaleString()+'</div>'+
@@ -1329,10 +1329,10 @@ function renderHistoryList(){
   }
   var unsent=hist.filter(function(i){return !i.sent;});
   var sent=hist.filter(function(i){return i.sent;});
-  makeSection('📝 未送信（編集可）','#e74c3c',unsent,true);
-  makeSection('✅ 送信済み','#27ae60',sent,false);
+  makeSection('📝 Unsent','#e74c3c',unsent,true);
+  makeSection('✅ Sent','#27ae60',sent,false);
   document.getElementById('history-summary').innerHTML=
-    '<strong style="font-size:22px;">合計（税込）: ¥'+total.toLocaleString()+'</strong>';
+    '<strong style="font-size:22px;">Total (tax incl.): ¥'+total.toLocaleString()+'</strong>';
 }
 function changeQty(idx,delta){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
@@ -1351,14 +1351,14 @@ function showCheckout(){
     'In: '+(localStorage.getItem('checkin_'+currentTable)||'--:--')+
     ' / Guests: '+(localStorage.getItem('guests_'+currentTable)||0);
   showView('view-checkout');
-  selectPayment('現金');
+  selectPayment('Cash');
   buildQuickCashBtns(total);
 }
 
-var currentPaymentMethod='現金';
+var currentPaymentMethod='Cash';
 function selectPayment(method){
   currentPaymentMethod=method;
-  var map={'現金':'cash','クレジット':'card','QR決済':'qr','電子マネー':'ic'};
+  var map={'Cash':'cash','Credit':'card','QR Pay':'qr','IC/e-Money':'ic'};
   ['cash','card','qr','ic'].forEach(function(k){
     ['co-pay-btn-','pay-btn-'].forEach(function(prefix){
       var btn=document.getElementById(prefix+k);
@@ -1371,8 +1371,8 @@ function selectPayment(method){
   });
   var calcArea=document.getElementById('change-calc-area');
   if(calcArea){
-    calcArea.style.display=method==='現金'?'block':'none';
-    if(method==='現金'){
+    calcArea.style.display=method==='Cash'?'block':'none';
+    if(method==='Cash'){
       document.getElementById('cash-received').value='';
       document.getElementById('change-amount').innerText='-';
     }
@@ -1435,16 +1435,16 @@ function pay(doPrint){
       r+=b.createTextElement({data:i.ja+'\n  '+i.qty+'点 x ¥'+i.price.toLocaleString()+'    ¥'+lineTotal.toLocaleString()+'\n'});
     });
     r+=b.createTextElement({data:'--------------------------------\n'});
-    r+=b.createTextElement({data:'小計 '+hist.reduce(function(s,i){return s+i.qty;},0)+'点（税込）\n'});
+    r+=b.createTextElement({data:'Subtotal: '+hist.reduce(function(s,i){return s+i.qty;},0)+' items (tax incl.)\n'});
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'center'});
     r+=b.createTextElement({data:'合　計（税込）\n'});
     r+=b.createTextElement({data:'¥'+grandTotal.toLocaleString()+'\n',width:2,height:2});
     r+=b.createAlignmentElement({position:'left'});
     r+=b.createTextElement({data:'--------------------------------\nお支払い: '+currentPaymentMethod+'\n'});
-    if(currentPaymentMethod==='現金'){
+    if(currentPaymentMethod==='Cash'){
       var received=parseInt(document.getElementById('cash-received').value)||0;
-      if(received>0)r+=b.createTextElement({data:'お預かり: ¥'+received.toLocaleString()+'\nお釣り:   ¥'+Math.max(0,received-grandTotal).toLocaleString()+'\n'});
+      if(received>0)r+=b.createTextElement({data:'Received: ¥'+received.toLocaleString()+'\nChange:   ¥'+Math.max(0,received-grandTotal).toLocaleString()+'\n'});
     }
     r+=b.createTextElement({data:'--------------------------------\n'});
     r+=b.createAlignmentElement({position:'center'});
@@ -1463,7 +1463,7 @@ function pay(doPrint){
 function sendToKitchen(){
   var hist=[];try{hist=JSON.parse(localStorage.getItem('history_'+currentTable)||'[]');}catch(e){}
   var unsent=hist.filter(function(i){return !i.sent;});
-  if(unsent.length===0){alert('未送信の注文がありません');return;}
+  if(unsent.length===0){alert('No unsent orders');return;}
   var now=new Date();
   var t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   var sentCount=hist.filter(function(i){return i.sent;}).reduce(function(s,i){return s+i.qty;},0);
@@ -1621,7 +1621,7 @@ window._saveSaleToCloud=async function(tableId,payMethod){
     await addDoc(collection(db,'stores/'+SID+'/sales'),{
       tableId:tableId,guests:guests,checkin:checkin,checkout:checkout,
       items:hist,total:subtotal,
-      paymentMethod:payMethod||'現金',isTakeout:(tableId==='TO'),timestamp:Timestamp.now()
+      paymentMethod:payMethod||'Cash',isTakeout:(tableId==='TO'),timestamp:Timestamp.now()
     });
     await deleteDoc(doc(db,'stores/'+SID+'/tables',tableId));
   }catch(e){console.warn('sale:',e.message);}
@@ -1667,10 +1667,10 @@ window._showAdmin=async function(mode){
     list.innerHTML=cards;
   }else if(mode==='dates'){
     var dayMap={};
-    sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['日','月','火','水','木','金','土'][d.getDay()];
+    sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
       if(!dayMap[k])dayMap[k]={label:k+'（'+dow+'）',t:0,c:0,g:0,ts:d.getTime(),ids:[],pay:{}};
       dayMap[k].t+=s.total;dayMap[k].c++;dayMap[k].g+=s.guests;dayMap[k].ids.push(s.id);
-      var pm=s.paymentMethod||'現金';dayMap[k].pay[pm]=(dayMap[k].pay[pm]||0)+s.total;total+=s.total;guests+=s.guests;
+      var pm=s.paymentMethod||'Cash';dayMap[k].pay[pm]=(dayMap[k].pay[pm]||0)+s.total;total+=s.total;guests+=s.guests;
     });
     window._dayDeleteMap=dayMap;
     list.innerHTML=Object.values(dayMap).sort(function(a,b){return b.ts-a.ts;}).map(function(s){
@@ -1683,13 +1683,13 @@ window._showAdmin=async function(mode){
         '</div></div>';
     }).join('')||'<p style="text-align:center;padding:50px;">No data</p>';
   }else if(mode==='dow'){
-    var labels=['日','月','火','水','木','金','土'];
+    var labels=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     var stats=labels.map(function(l){return{l:l,t:0,c:0,g:0};});
     sales.forEach(function(s){var dow=s.timestamp.toDate().getDay();stats[dow].t+=s.total;stats[dow].c++;stats[dow].g+=s.guests;total+=s.total;guests+=s.guests;});
     list.innerHTML=stats.map(function(s){return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time">'+s.l+'</span></div><div class="sale-detail-info">Orders: '+s.c+' / Guests: '+s.g+'</div><div class="sale-total-line"><span class="sale-price-big">¥'+s.t.toLocaleString()+'</span></div></div>';}).join('');
   }else if(mode==='month'){
     var dm2={};
-    sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['日','月','火','水','木','金','土'][d.getDay()];
+    sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
       if(!dm2[k])dm2[k]={label:k+'（'+dow+'）',t:0,c:0,g:0,ts:d.getTime()};
       dm2[k].t+=s.total;dm2[k].c++;dm2[k].g+=s.guests;total+=s.total;guests+=s.guests;
     });
@@ -1708,14 +1708,14 @@ window._showAdmin=async function(mode){
   if(mode!=='menu')document.getElementById('sum-count').innerText=sales.length;
   var typeArea=document.getElementById('sales-type-summary-area');
   if(mode!=='menu'&&mode!=='dow'){
-    var tm={'店内':0,'テイクアウト':0};
-    sales.forEach(function(s){if(s.tableId==='TO')tm['テイクアウト']+=s.total;else tm['店内']+=s.total;});
+    var tm={'Dine-in':0,'Takeout':0};
+    sales.forEach(function(s){if(s.tableId==='TO')tm['Takeout']+=s.total;else tm['Dine-in']+=s.total;});
     typeArea.innerHTML=Object.entries(tm).map(function(kv){return '<span style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:10px;">'+kv[0]+': ¥'+kv[1].toLocaleString()+'</span>';}).join('');
     typeArea.style.display='flex';
   }else{typeArea.style.display='none';}
   var payArea=document.getElementById('payment-summary-area');
   if(mode!=='menu'&&mode!=='dow'){
-    var pm={};sales.forEach(function(s){var p=s.paymentMethod||'現金';if(!pm[p])pm[p]=0;pm[p]+=s.total;});
+    var pm={};sales.forEach(function(s){var p=s.paymentMethod||'Cash';if(!pm[p])pm[p]=0;pm[p]+=s.total;});
     payArea.innerHTML=Object.entries(pm).map(function(kv){return '<span style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:10px;">'+kv[0]+': ¥'+kv[1].toLocaleString()+'</span>';}).join('');
     payArea.style.display='flex';
   }else{payArea.style.display='none';}
@@ -1737,7 +1737,7 @@ window._handleLogin=function(){
 window._exportCSV=async function(){
   var data=await window.getSalesData();
   var csv='DateTime,Table,Guests,CheckIn,CheckOut,Payment,Total\n';
-  data.forEach(function(d){var dt=d.timestamp.toDate().toLocaleString('ja-JP');csv+=dt+','+d.tableId+','+(d.guests||0)+','+(d.checkin||'')+','+(d.checkout||'')+','+(d.paymentMethod||'現金')+','+(d.total||0)+'\n';});
+  data.forEach(function(d){var dt=d.timestamp.toDate().toLocaleString('ja-JP');csv+=dt+','+d.tableId+','+(d.guests||0)+','+(d.checkin||'')+','+(d.checkout||'')+','+(d.paymentMethod||'Cash')+','+(d.total||0)+'\n';});
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='juntara_sales.csv';a.click();
 };
