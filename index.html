@@ -131,9 +131,7 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
   <header><div class="header-left"><span class="back-btn" onclick="showIndex()">＜</span><span>Login</span></div><span></span></header>
   <div class="login-container">
     <div style="font-size:20px;font-weight:bold;margin-bottom:25px;color:var(--primary);">Owner Login</div>
-    <input type="email" id="login-email" class="login-input" placeholder="Email">
-    <input type="password" id="login-pass" class="login-input" placeholder="Password">
-    <button class="btn-large" style="background:var(--primary);color:#fff;" onclick="handleLogin()">Login</button>
+    <button class="btn-large" style="background:#4285f4;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;" onclick="handleLogin()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;background:#fff;border-radius:2px;padding:2px;">Googleでログイン</button>
   </div>
 </div>
 
@@ -1567,7 +1565,7 @@ renderIndex();
 try{
 const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
 const {getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection,addDoc,getDocs,Timestamp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-const {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+const {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 const FC={apiKey:"AIzaSyD_m3-1_fHNBNNhDRt6ZWXsilptcrvXCM",authDomain:"revoreji.firebaseapp.com",projectId:"revoreji",storageBucket:"revoreji.firebasestorage.app",messagingSenderId:"91184668244",appId:"1:91184668244:web:22e34995fe0f69d1e9d7c1"};
 const SID='juntara';
 const app=initializeApp(FC);
@@ -1690,7 +1688,7 @@ window._showAdmin=async function(mode){
     var ym2=getSelYM();
     var ms=allSales.filter(function(s){var d=s.timestamp.toDate();return d.getFullYear()===ym2[0]&&d.getMonth()+1===ym2[1];});
     var im={};
-    ms.forEach(function(s){total+=s.total;guests+=s.guests;(s.items||[]).forEach(function(item){var name=item.ja||item.name||'?';if(!im[name])im[name]={qty:0,amount:0};im[name].qty+=item.qty;im[name].amount+=Math.floor(item.price*item.qty*(1+(item.rate||0.10)));});});
+    ms.forEach(function(s){total+=s.total;guests+=s.guests;(s.items||[]).forEach(function(item){var name=item.ja||item.name||'?';if(!im[name])im[name]={qty:0,amount:0};im[name].qty+=item.qty;im[name].amount+=item.price*item.qty;});});
     list.innerHTML='<div style="padding:12px 15px;background:#f8f8f8;font-size:13px;color:#666;border-bottom:1px solid #eee;">📅 '+ym2[0]+'/'+ym2[1]+' — Sales by Item (by qty)</div>'+
       Object.entries(im).sort(function(a,b){return b[1].qty-a[1].qty;}).map(function(kv,i){return '<div class="sale-card"><div class="sale-time-row"><span class="sale-time" style="font-size:14px;">'+(i+1)+'. '+kv[0]+'</span></div><div class="sale-detail-info">Qty: '+kv[1].qty+'</div><div class="sale-total-line"><span class="sale-price-big">¥'+kv[1].amount.toLocaleString()+'</span></div></div>';}).join('')||'<p style="text-align:center;padding:50px;">No data</p>';
     document.getElementById('sum-count').innerText=ms.length;
@@ -1720,10 +1718,7 @@ window._delDay=async function(label){
 };
 window._logoutOwner=function(){signOut(auth);alert('Logged out');showIndex();};
 window._handleLogin=async function(){
-  var e=document.getElementById('login-email').value.trim();
-  var p=document.getElementById('login-pass').value.trim();
-  if(!e||!p)return;
-  try{await signInWithEmailAndPassword(auth,e,p);window._showAdmin('day');}catch(err){alert('Login failed');}
+  try{const provider=new GoogleAuthProvider();await signInWithPopup(auth,provider);window._showAdmin('day');}catch(err){alert('Login failed: '+err.message);}
 };
 window._exportCSV=async function(){
   var data=await window.getSalesData();
