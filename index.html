@@ -1668,9 +1668,10 @@ window._showAdmin=async function(mode){
   }else if(mode==='dates'){
     var dayMap={};
     sales.forEach(function(s){var d=s.timestamp.toDate();var k=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');var dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
-      if(!dayMap[k])dayMap[k]={label:k+'（'+dow+'）',t:0,c:0,g:0,ts:d.getTime(),ids:[],pay:{}};
-      dayMap[k].t+=s.total;dayMap[k].c++;dayMap[k].g+=s.guests;dayMap[k].ids.push(s.id);
-      var pm=s.paymentMethod||'Cash';dayMap[k].pay[pm]=(dayMap[k].pay[pm]||0)+s.total;total+=s.total;guests+=s.guests;
+      var label=k+'（'+dow+'）';
+      if(!dayMap[label])dayMap[label]={label:label,t:0,c:0,g:0,ts:d.getTime(),ids:[],pay:{}};
+      dayMap[label].t+=s.total;dayMap[label].c++;dayMap[label].g+=s.guests;dayMap[label].ids.push(s.id);
+      var pm=s.paymentMethod||'Cash';dayMap[label].pay[pm]=(dayMap[label].pay[pm]||0)+s.total;total+=s.total;guests+=s.guests;
     });
     window._dayDeleteMap=dayMap;
     list.innerHTML=Object.values(dayMap).sort(function(a,b){return b.ts-a.ts;}).map(function(s){
