@@ -94,9 +94,11 @@ footer{width:100%;display:flex;flex-direction:column;z-index:100;box-shadow:0 -3
     </div>
     <div style="border-top:1px solid #eee;margin:14px 0;padding-top:14px;">
       <div style="font-size:13px;font-weight:bold;margin-bottom:6px;">🔐 Owner Password</div>
+      <input id="input-owner-current-pass" type="password" placeholder="現在のパスワード"
+        style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;margin-bottom:8px;">
       <input id="input-owner-pass" type="password" placeholder="新しいパスワード"
         style="width:100%;padding:10px;font-size:15px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;">
-      <div style="font-size:11px;color:#aaa;margin-top:4px;">※入力した場合のみ更新されます</div>
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">※初回設定時は現在のパスワード不要</div>
     </div>
     <button onclick="saveSettings()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;">Save</button>
     <div id="settings-saved" style="text-align:center;color:green;font-size:13px;margin-top:10px;display:none;">✅ Saved!</div>
@@ -1191,6 +1193,7 @@ function openCurryModal(item){
 function openSettings(){
   document.getElementById('input-kitchen-ip').value=localStorage.getItem('kitchenIp')||DEFAULT_KITCHEN_IP;
   document.getElementById('input-receipt-ip').value=localStorage.getItem('receiptIp')||DEFAULT_RECEIPT_IP;
+  document.getElementById('input-owner-current-pass').value='';
   document.getElementById('input-owner-pass').value='';
   document.getElementById('settings-saved').style.display='none';
   document.getElementById('overlay-settings').style.display='flex';
@@ -1201,7 +1204,12 @@ function saveSettings(){
   if(kip)localStorage.setItem('kitchenIp',kip);
   if(rip)localStorage.setItem('receiptIp',rip);
   var pw=document.getElementById('input-owner-pass').value.trim();
-  if(pw)localStorage.setItem('ownerPass',pw);
+  if(pw){
+    var cur=document.getElementById('input-owner-current-pass').value.trim();
+    var saved=localStorage.getItem('ownerPass')||'';
+    if(saved&&cur!==saved){alert('現在のパスワードが違います');return;}
+    localStorage.setItem('ownerPass',pw);
+  }
   document.getElementById('settings-saved').style.display='block';
 }
 function closeSettings(){document.getElementById('overlay-settings').style.display='none';}
